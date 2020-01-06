@@ -1,0 +1,51 @@
+html, body {
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: white;
+  color:black;
+}
+
+#popup {
+  width: 400px;
+}
+
+#serror {
+  color: #721c24;
+}
+
+
+#schart {
+  border-bottom: 1px solid lightgray;
+  margin: 10px 0;
+  padding-bottom: 5px;
+}
+
+section h3 {
+  margin: 15px 0 10px 0;
+}
+
+.flex {
+  display: flex;
+}
+
+.flex>div {
+  flex-grow: 1;
+  padding: 0 5px;
+}
+
+.flex .icon {
+  flex-grow: 0;
+  text-align: center;
+}
+
+.flex p {
+  margin: 8px 0;
+  color: gray;
+}
+
+.flex h4 {
+  margin: 0;
+}
+
+.lightgray {
+  color: lightgray;
+}

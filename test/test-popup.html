@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="../theme.css" />
+</head>
+
+<body id="popup">
+    <section id="serror" hidden>
+        <h5 id="errorTitle">Error</h5>
+        <p id="errorSubtitle">Could not fetch data.</p>
+    </section>
+
+    <h3 id="title">Time on Wikipedia.org</h3>
+    <p id="subtitle">On average you spent <strong>16 minutes per day</strong> on this webpage during the last week.</p>
+
+    <section id="schart">
+        <canvas id="cchart"></canvas>
+    </section>
+
+    <section id="stime">
+        <h3>Reduce your screen time</h3>
+        <div class="flex">
+            <div class="icon">
+                <svg width="32" height="32" class="octicon octicon-bell" viewBox="0 0 14 16" version="1.1" aria-hidden="true"><path fill-rule="evenodd" d="M14 12v1H0v-1l.73-.58c.77-.77.81-2.55 1.19-4.42C2.69 3.23 6 2 6 2c0-.55.45-1 1-1s1 .45 1 1c0 0 3.39 1.23 4.16 5 .38 1.88.42 3.66 1.19 4.42l.66.58H14zm-7 4c1.11 0 2-.89 2-2H5c0 1.11.89 2 2 2z"></path></svg>
+            </div>
+            <div class="content">
+                <h4>Set daily limit</h4>
+                <p>A notification will be shown when you've reached the time.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="strack">
+        <h3>Track my usage</h3>
+        <div class="flex">
+            <div class="icon">
+                <svg width="32" height="32" class="octicon octicon-plus" viewBox="0 0 12 16" version="1.1" aria-hidden="true"><path fill-rule="evenodd" d="M12 9H7v5H5V9H0V7h5V2h2v5h5v2z"></path></svg>
+            </div>
+            <div class="content">
+                <h4><input type="checkbox" id="track"> Enable tracking</h4>
+                <p>Your screen time on this hostname will be tracked when you enable tracking.</p>
+            </div>
+        </div>
+    </section>
+
+    
+
+    <script src="../lib/moment-with-locales.min.js"></script>
+    <script src="../lib/chart.js"></script>
+</body>
+
+</html>
