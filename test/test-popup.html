@@ -4,6 +4,26 @@
 <head>
     <meta charset="utf-8">
     <link rel="stylesheet" href="../theme.css" />
+    <style>
+        .btn-group{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin:10px 0;
+        }
+        .btn-link{
+            border: none;
+            appearance: none;
+            color: skyblue;
+            background-color: transparent;
+        }
+        .btn-link:hover{
+            cursor:pointer;
+        }
+        .btn-link-active{
+            color:darkgray
+        }
+       </style>
 </head>
 
 <body id="popup">
@@ -15,8 +35,14 @@
     <h3 id="title">Time on Wikipedia.org</h3>
     <p id="subtitle">On average you spent <strong>16 minutes per day</strong> on this webpage during the last week.</p>
 
+    
     <section id="schart">
         <canvas id="cchart"></canvas>
+        <div class="btn-group">
+            <div><button type="button" class="btn btn-link btn-link-active" id="view-day">Today</button></div>
+            <div><button type="button" class="btn btn-link" id="view-week">Week</button></div>
+            <div><button type="button" class="btn btn-link" id="view-month">Month</button></div>
+        </div>
     </section>
 
     <section id="stime">

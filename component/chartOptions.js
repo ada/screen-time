@@ -37,15 +37,16 @@ let defaultOptions = {
     }
 };
 
+
 function get(nDays){
-    let options = defaultOptions; 
+    var options = defaultOptions; 
     if (nDays === 1) {
         delete(options.tooltips);
         options.scales.xAxes[0].time.unit = "hour";
         delete(options.scales.xAxes[0].time.tooltipFormat);
         return options; 
-    } else if (nDays > 1 && nDays <= 7) {
-        return options; 
+    } else if (nDays > 1 && nDays < 8) {
+        return defaultOptions; 
     }else{
         options.scales.xAxes[0].time.displayFormats.day = "D";
         return options;

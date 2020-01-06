@@ -49,3 +49,28 @@ section h3 {
 .lightgray {
   color: lightgray;
 }
+
+
+
+.btn-group{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin:10px 0;
+}
+.btn-link{
+  border: none;
+  appearance: none;
+  color: skyblue;
+  background-color: transparent;
+}
+.btn-link:focus{
+  outline: none;
+}
+.btn-link:hover{
+  cursor:pointer;
+}
+.btn-disabled{
+  color:darkgray;
+  cursor:not-allowed;
+}
