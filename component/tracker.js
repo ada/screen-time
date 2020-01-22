@@ -1,35 +1,32 @@
 import * as settings from "./settings.js";
 
-async function isTracked(hostname) {
-    if (hostname.length === 0)
+export async function isTracked(hostname) {
+    if (!hostname || hostname.length === 0)
         return false;
 
-    let _settings = await settings.read();
+    let _settings = await settings.get();
 
-    if (_settings.track.all === true || _settings.track.hosts.indexOf(hostname) > -1) {
+    if (_settings.track.all === true || _settings.hosts.filter(e => e.hostname == hostname &&  e.track === true).length > 1) {
         return true;
     } else {
         return false;
     }
 }
 
-async function track(hostname) {
-    let _settings = await settings.read();
+export async function track(hostname) {
+    let _settings = await settings.get();
     if (_settings.track.hosts.indexOf(hostname) === -1) {
         _settings.track.hosts.push(hostname);
-        await settings.write(_settings);
+        await settings.set(_settings);
     }
 }
 
-async function untrack() {
-    let _settings = await settings.read();
+export async function untrack() {
+    let _settings = await settings.get();
     let index = _settings.track.hosts.indexOf(hostname);
 
     if (index > -1)
         _settings.track.hosts.splice(index, 1);
 
-    await settings.write(_settings);
-
+    await settings.set(_settings);
 }
-
-export { isTracked, track, untrack };

@@ -1,29 +1,31 @@
 import * as settings from "../component/settings.js";
+import {set} from '../component/activity.js';
 
+
+  
 let UICheckboxTrackAll = document.getElementById("checkboxTrackAll"); 
+let UISelectBoxDefaultChartView = document.getElementById("defaultChartView"); 
 let _settings; 
 
-async function save(e) {
-    if(e)
-        e.preventDefault();
-    await settings.write(_settings); 
-}
-
-async function load() {
-    _settings = await settings.read(); 
-    document.getElementById("checkboxTrackAll").checked = _settings.track.all;
+async function init() {
+    _settings = await settings.get(); 
+    UICheckboxTrackAll.checked = _settings.track.all;
+    UISelectBoxDefaultChartView.value = _settings.chart.nDays; 
 }
 
 async function reset() {
-    await settings.write(settings.defaultSettings);
-    await load(); 
+    await settings.set(settings.defaults);
+    await set([]);
+    await init(); 
 }
 
-async function toggleTrackAll(){
+async function onSettingsChanged(){
     _settings.track.all = UICheckboxTrackAll.checked;
-    await save(); 
+    _settings.chart.nDays = UISelectBoxDefaultChartView.value;
+    await settings.set(_settings); 
 }
 
-document.addEventListener("DOMContentLoaded", load);
+document.addEventListener("DOMContentLoaded", init);
 document.querySelector("form").addEventListener("reset", reset);
-UICheckboxTrackAll.addEventListener("change", toggleTrackAll);
+UICheckboxTrackAll.addEventListener("change", onSettingsChanged);
+UISelectBoxDefaultChartView.addEventListener("change", onSettingsChanged)

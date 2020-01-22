@@ -7,13 +7,37 @@
   </head>
 
 <body>
+  <div id="app"></div>
+  
   <form>
-    <label><input type="checkbox" id="checkboxTrackAll"> Track all my activity</label>
-    <hr>
-    <button type="reset">Reset settings</button>
+    <section>
+      
+      <h2>Tracking</h2>
+      <p>
+        <input type="checkbox" id="checkboxTrackAll">
+        <label for="checkboxTrackAll">Track all hostnames</label>
+      </p>
+    </section>
+    <section>
+      <h2>Chart</h2>
+      <p>
+        <label for="defaultChartView">Default chart view:</label>
+        <select name="defaultChartView" id="defaultChartView" required>
+          <option value="1">Day</option>
+          <option value="7">Week</option>
+          <option value="30">Month</option>
+        </select>
+      </p>
+    </section>
+    <section>
+      <h2>Active hours</h2>
+      <div id="active-hours"></div>
+    </section>
+    <p><button type="reset">Reset settings</button></p>
   </form>
 
   <script src="options.js" type="module"></script>
+  
 </body>
 
 </html>

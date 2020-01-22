@@ -13,7 +13,8 @@
     "webNavigation",
     "storage",
     "alarms",
-    "notifications"
+    "notifications", 
+    "<all_urls>"
   ],
   "options_ui": {
     "page": "./options/options.html"
@@ -25,10 +26,5 @@
   },
   "background": {
     "page": "./background/background.html"
-  },
-  "applications": {
-    "gecko": {
-      "id": "TimeAnalytics@local.com"
-    }
   }
 }

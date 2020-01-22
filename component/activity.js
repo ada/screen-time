@@ -1,8 +1,8 @@
-import { isEmptyObject } from "./helper.js";
+import { isEmptyObject } from "./util.js";
 
 async function set(e) {
     try {
-        await browser.storage.sync.set({
+        await chrome.storage.sync.set({
             "sessions": e
         });
     } catch (error) {
@@ -12,14 +12,14 @@ async function set(e) {
 
 async function get(options) {
     try {
-        let res = await browser.storage.sync.get("sessions");
+        let res = await chrome.storage.sync.get(["sessions"]);
         
         if (isEmptyObject(res) === true)
             return [];
 
         if (options && options.hostname) {
             let index = res.sessions.findIndex(element => element.hostname === options.hostname);
-            return index === -1 ? undefined : res.sessions[index];
+            return index === -1 ? {sessions:[], hostname:options.hostname} : res.sessions[index];
         }
 
         return res.sessions;

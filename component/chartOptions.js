@@ -38,12 +38,12 @@ let defaultOptions = {
 };
 
 
-function get(nDays){
-    var options = defaultOptions; 
+export function get(nDays){
+    let options = defaultOptions; 
     if (nDays === 1) {
         delete(options.tooltips);
-        options.scales.xAxes[0].time.unit = "hour";
         delete(options.scales.xAxes[0].time.tooltipFormat);
+        options.scales.xAxes[0].time.unit = "hour";
         return options; 
     } else if (nDays > 1 && nDays < 8) {
         return defaultOptions; 
@@ -52,5 +52,3 @@ function get(nDays){
         return options;
     }
 }
-
-export {get}
