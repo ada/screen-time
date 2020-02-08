@@ -14,7 +14,7 @@ async function init() {
 }
 
 async function onUserInteraction() {
-  let tabs = await chrome.tabs.query({ active: true });
+  let tabs = await browser.tabs.query({ active: true });
 
   for (let i = 0; i < tabs.length; i++) {
     const tab = tabs[i];
@@ -47,49 +47,51 @@ async function onUserInteraction() {
         }
 
         if (block === true) {
-          let expiredTabs = await chrome.tabs.query({ url: "*://*." + hostname + "/*" });
+          let expiredTabs = await browser.tabs.query({ url: "*://*." + hostname + "/*" });
           expiredTabs.forEach(element => {
-            chrome.tabs.executeScript(element.id, {
+            browser.tabs.executeScript(element.id, {
               code: 'document.body.style.border = "5px solid red"'
             });
           });
-        
-          chrome.notifications.create("uid", {
+
+          browser.notifications.create("uid", {
             "type": "basic",
-            "iconUrl": chrome.runtime.getURL("icons/beasts-48.png"),
+            "iconUrl": browser.runtime.getURL("icons/beasts-48.png"),
             "title": "Access denied",
             "message": "Access to " + hostname + " was blocked. "
           });
         }
-      }}
 
-
-      if (match.length === 0) {
-
-        //check if it has alarms
-        if (FilterhostSettings.length) {
-          alarm.init(FilterhostSettings[0]);
-        }
-
-        console.log("session started: " + hostname);
-        sessionStorage.push({
-          hostname: hostname,
-          created: new Date()
-        });
       }
-    
+    }
+
+
+    // Manages alarms when it's a new session
+    if (match.length === 0) {
+      //check if it has alarms
+      if (FilterhostSettings.length) {
+        alarm.init(FilterhostSettings[0]);
+      }
+
+      console.log("session started: " + hostname);
+      sessionStorage.push({
+        hostname: hostname,
+        created: new Date()
+      });
+    }
+
   };
 
   for (let i = 0; i < sessionStorage.length; i++) {
     const session = sessionStorage[i];
     let match = tabs.filter(t => { return parseHostname(t.url) === session.hostname });
     if (match.length === 0) {
-      
+
       // Make sure to clear all alarms for the ended sessions.
-      alarm.clear({hostname : session.hostname});
-      
+      alarm.clear({ hostname: session.hostname });
+
       const duration = Math.round((new Date() - session.created));
-      console.log("session ended: " + session.hostname, duration/1000);
+      console.log("session ended: " + session.hostname, duration / 1000);
       await add(session.hostname, session.created.toJSON(), duration);
       sessionStorage.splice(i, 1);
     }
@@ -113,14 +115,10 @@ async function OnWindowFocusChanged(windowId) {
   t = setTimeout(onUserInteraction, minIdleTime);
 }
 
-chrome.tabs.onUpdated.addListener(OnTabUpdated);
-chrome.tabs.onActivated.addListener(OnTabActivated);
-chrome.windows.onFocusChanged.addListener(OnWindowFocusChanged);
-function logStorageChange(changes, area) {
+async function logStorageChange(changes, area) {
   console.log("Change in storage area: " + area);
- 
   var changedItems = Object.keys(changes);
- 
+
   for (var item of changedItems) {
     console.log(item + " has changed:");
     console.log("Old value: ");
@@ -130,5 +128,8 @@ function logStorageChange(changes, area) {
   }
 }
 
-chrome.storage.onChanged.addListener(logStorageChange);
+browser.tabs.onUpdated.addListener(OnTabUpdated);
+browser.tabs.onActivated.addListener(OnTabActivated);
+browser.windows.onFocusChanged.addListener(OnWindowFocusChanged);
+//browser.storage.onChanged.addListener(logStorageChange);
 init();

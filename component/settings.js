@@ -1,13 +1,13 @@
 import { isEmptyObject } from "./util.js";
 
 export async function set(obj) {
-    await chrome.storage.sync.set({
+    await browser.storage.sync.set({
         "settings": obj
     });
 }
 
 export async function get() {
-    let obj = await chrome.storage.sync.get(["settings"]);
+    let obj = await browser.storage.sync.get(["settings"]);
     if (isEmptyObject(obj) === true) {
         await set(defaults);
         return defaults;

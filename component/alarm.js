@@ -68,14 +68,14 @@ export async function init(hostSettings) {
 }
 
 function clearSessionExpirationWarning(name){
-    chrome.notifications.clear(name);
+    browser.notifications.clear(name);
 }
 
 function sessionExpirationWarning(options) {
     var uid = "warning_"+options.hostname;
-    chrome.notifications.create(uid, {
+    browser.notifications.create(uid, {
         "type": "basic",
-        "iconUrl": chrome.runtime.getURL("icons/beasts-48.png"),
+        "iconUrl": browser.runtime.getURL("icons/beasts-48.png"),
         "title": "Reminder",
         "message": "Your daily limit on " + options.hostname + " will be reached in " + options.timeLeft + " seconds."
     });
@@ -84,9 +84,9 @@ function sessionExpirationWarning(options) {
 
 function onDailyLimitReached(options) {
     var uid = "expired_"+options.hostname;
-    chrome.notifications.create(uid, {
+    browser.notifications.create(uid, {
         "type": "basic",
-        "iconUrl": chrome.runtime.getURL("icons/beasts-48.png"),
+        "iconUrl": browser.runtime.getURL("icons/beasts-48.png"),
         "title": "Daily limit reached",
         "message": "You've reached your daily limit for " + options.hostname
     });

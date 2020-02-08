@@ -12,13 +12,14 @@ let hostname;
 
 async function setAlarm(element) {
     let minutes = document.getElementById("alarm").value;
+    const blockAfter = document.getElementById("blockAfter").checked; 
     _settings = await settings.get();
     let i = _settings.hosts.findIndex(host => host.hostname === hostname);
     let limitArray = [
         {
             period: "day",
             threshold: minutes*60*1000,
-            blockAfter: true
+            blockAfter: blockAfter
         }
     ]; 
 
@@ -30,12 +31,11 @@ async function setAlarm(element) {
                 activeHours: []
             }
         );
-    }else{
+    } else {
         _settings.hosts[i].limits = limitArray
     }
 
     await settings.set(_settings);
-    console.log(_settings);
 }
 
 function updateAlarmIndicator() {
@@ -125,9 +125,11 @@ function setChartPeriod(e) {
     updateSubtitle(data, nDays);
 }
 
+
 function initEventListeners() {
     document.getElementById("alarm").addEventListener("change", setAlarm);
     document.getElementById("alarm").addEventListener("input", updateAlarmIndicator);
+    document.getElementById("blockAfter").addEventListener("change", setAlarm);
     document.getElementById("view-day").addEventListener("click", setChartPeriod);
     document.getElementById("view-week").addEventListener("click", setChartPeriod);
     document.getElementById("view-month").addEventListener("click", setChartPeriod);
@@ -182,6 +184,8 @@ async function initHostSettings(){
     let i = _settings.hosts.findIndex(host => host.hostname === hostname);
     if (i > -1) {
         document.getElementById("alarm").value = _settings.hosts[i].limits[0].threshold/1000/60;
+        document.getElementById("blockAfter").checked = _settings.hosts[i].limits[0].blockAfter;
+        updateAlarmIndicator();
     }
 }
 
@@ -203,4 +207,4 @@ function configUI(state, options) {
     }
 }
 
-let tabs = chrome.tabs.query({ active: true, currentWindow: true }).then(init);
+let tabs = browser.tabs.query({ active: true, currentWindow: true }).then(init);

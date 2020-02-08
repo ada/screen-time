@@ -2,7 +2,7 @@ import { isEmptyObject } from "./util.js";
 
 async function set(e) {
     try {
-        await chrome.storage.sync.set({
+        await browser.storage.sync.set({
             "sessions": e
         });
     } catch (error) {
@@ -12,7 +12,7 @@ async function set(e) {
 
 async function get(options) {
     try {
-        let res = await chrome.storage.sync.get(["sessions"]);
+        let res = await browser.storage.sync.get(["sessions"]);
         
         if (isEmptyObject(res) === true)
             return [];
