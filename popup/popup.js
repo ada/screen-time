@@ -3,32 +3,48 @@ import { isTracked } from '../component/tracker.js';
 import { get } from '../component/activity.js';
 import { get as getChartOptions } from '../component/chartOptions.js';
 import { isSameDay, isSameHour, parseHostname } from '../component/util.js';
+import * as alarm from '../component/alarm.js';
 
-let ctx;
-let chart;
-let host;
+let _hostname;
+let _host;
+let _chart;
 let _settings;
-let hostname; 
 
-async function setAlarm(element) {
-    let minutes = document.getElementById("alarm").value;
-    const blockAfter = document.getElementById("blockAfter").checked; 
-    _settings = await settings.get();
-    let i = _settings.hosts.findIndex(host => host.hostname === hostname);
+let UIRangeAlarm = document.getElementById("alarm");
+let UIRangeAlarmLabel = document.getElementById("alarmLabel"); 
+let UICheckboxBlockAfter = document.getElementById("blockAfter");
+let UIButtonViewDay = document.getElementById("view-day");
+let UIButtonViewWeek = document.getElementById("view-week");
+let UIButtonViewMonth = document.getElementById("view-month");
+let UICanvasChart = document.getElementById('cchart'); 
+let UITitle = document.getElementById("title");
+let UISubtitle = document.getElementById("subtitle");
+
+function initEventListeners() {
+    UIRangeAlarm.addEventListener("change", onAlarmSettingsChanged);
+    UIRangeAlarm.addEventListener("input", updateAlarmLabel);
+    UICheckboxBlockAfter.addEventListener("change", onAlarmSettingsChanged);
+    UIButtonViewDay.addEventListener("click", onChartSettingsChanged);
+    UIButtonViewWeek.addEventListener("click", onChartSettingsChanged);
+    UIButtonViewMonth.addEventListener("click", onChartSettingsChanged);
+}
+
+async function onAlarmSettingsChanged() {
+    let i = _settings.hosts.findIndex(element => element.hostname === _hostname);
     let limitArray = [
         {
             period: "day",
-            threshold: minutes*60*1000,
-            blockAfter: blockAfter
+            threshold: UIRangeAlarm.value * 60 * 1000,
+            blockAfter: UICheckboxBlockAfter.checked
         }
     ]; 
 
     if (i === -1) {
         _settings.hosts.push(
             {
-                hostname: hostname,
+                hostname: _hostname,
                 limits: limitArray,
-                activeHours: []
+                accessRules: []
             }
         );
     } else {
@@ -38,9 +54,9 @@ async function setAlarm(element) {
     await settings.set(_settings);
 }
 
-function updateAlarmIndicator() {
-    let minutes = document.getElementById("alarm").value;
-    document.getElementById("alarmLabel").innerHTML = minutes == 0 ? "set below." : "of <strong>" + minutes + " minutes</strong>.";
+function updateAlarmLabel() {
+    let minutes = UIRangeAlarm.value;
+    UIRangeAlarmLabel.innerHTML = minutes == 0 ? "set below." : "of <strong>" + minutes + " minutes</strong>.";
 }
 
 function prepareGraphData(sessions, nDays) {
@@ -86,17 +102,18 @@ function updateSubtitle(data, nDays) {
     } else {
         msg = "On average you spent <strong>" + average + " minutes/day</strong> on this webpage during the last " + nDays + " days.";
     }
-    configUI('SUBTITLE', {subtitle : msg});
+    
+    UISubtitle.innerHTML = msg;
 }
 
 function updateChart(data, nDays) {
-    chart.data.datasets[0].data = data.ydata;
-    chart.data.labels = data.xdata;
-    chart.options = getChartOptions(nDays);
-    chart.update();
+    _chart.data.datasets[0].data = data.ydata;
+    _chart.data.labels = data.xdata;
+    _chart.options = getChartOptions(nDays);
+    _chart.update();
 }
 
-function setChartPeriod(e) {
+function onChartSettingsChanged(e) {
     let nDays = 7;
     switch (e.srcElement.id) {
         case "view-day":
@@ -120,24 +137,14 @@ function setChartPeriod(e) {
     _curr.classList.add("btn-disabled");
     _curr.disabled = true;
 
-    let data = prepareGraphData(host.sessions, nDays);
+    let data = prepareGraphData(_host.sessions, nDays);
     updateChart(data, nDays);
     updateSubtitle(data, nDays);
 }
 
-
-function initEventListeners() {
-    document.getElementById("alarm").addEventListener("change", setAlarm);
-    document.getElementById("alarm").addEventListener("input", updateAlarmIndicator);
-    document.getElementById("blockAfter").addEventListener("change", setAlarm);
-    document.getElementById("view-day").addEventListener("click", setChartPeriod);
-    document.getElementById("view-week").addEventListener("click", setChartPeriod);
-    document.getElementById("view-month").addEventListener("click", setChartPeriod);
-}
-
 async function initChart(data, nDays) {
-    ctx = document.getElementById('cchart').getContext('2d');
-    chart = new Chart(ctx, {
+    let UICanvasChartContext = UICanvasChart.getContext('2d');
+    _chart = new Chart(UICanvasChartContext, {
         type: 'bar',
         data: {
             "labels": data.xdata,
@@ -160,51 +167,36 @@ async function initChart(data, nDays) {
     });
 }
 
+async function initHostSettings(){
+    let i = _settings.hosts.findIndex(host => host.hostname === _hostname);
+    if (i > -1) {
+        UIRangeAlarm.value = _settings.hosts[i].limits[0].threshold/1000/60;
+        UICheckboxBlockAfter.checked = _settings.hosts[i].limits[0].blockAfter;
+        updateAlarmLabel();
+    }
+}
+
 async function init(tabs) {
-    hostname = parseHostname(tabs[0].url);
-    if (hostname.length === 0)
+    _hostname = parseHostname(tabs[0].url);
+    if (_hostname.length === 0)
         window.close();
 
-    if (await isTracked(hostname) === false) {
-        configUI('HOSTNAME_NOT_TRACKED');
+    if (await isTracked(_hostname) === false) {
+        document.getElementById("schart").hidden = true;
+        document.getElementById("stime").hidden = true;
+        document.getElementById("strack").hidden = false;
         return;
     }
 
-    configUI("HOSTNAME", {hostname : hostname});
-    host = await get({ hostname: hostname });
+    UITitle.textContent = "Time on " + _hostname;
+    _host = await get({ hostname: _hostname });
     _settings = await settings.get();
-    let data = prepareGraphData(host.sessions, _settings.chart.nDays);
+    let data = prepareGraphData(_host.sessions, _settings.chart.nDays);
+    
     initChart(data, _settings.chart.nDays);
     updateSubtitle(data, _settings.chart.nDays);
     initEventListeners();
     initHostSettings();
-}
-
-async function initHostSettings(){
-    let i = _settings.hosts.findIndex(host => host.hostname === hostname);
-    if (i > -1) {
-        document.getElementById("alarm").value = _settings.hosts[i].limits[0].threshold/1000/60;
-        document.getElementById("blockAfter").checked = _settings.hosts[i].limits[0].blockAfter;
-        updateAlarmIndicator();
-    }
-}
-
-function configUI(state, options) {
-    switch (state) {
-        case 'HOSTNAME_NOT_TRACKED':
-            document.getElementById("schart").hidden = true;
-            document.getElementById("stime").hidden = true;
-            document.getElementById("strack").hidden = false;
-            break;
-        case 'HOSTNAME':
-            document.getElementById("title").textContent = "Time on " + options.hostname;
-            break;
-        case 'SUBTITLE': 
-            document.getElementById("subtitle").innerHTML = options.subtitle;
-            break;
-        default:
-            throw Error("The provided state is not implemented");
-    }
 }
 
 let tabs = browser.tabs.query({ active: true, currentWindow: true }).then(init);

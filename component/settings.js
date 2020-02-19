@@ -4,6 +4,8 @@ export async function set(obj) {
     await browser.storage.sync.set({
         "settings": obj
     });
+    
+    console.log("Settings saved.");
 }
 
 export async function get() {
@@ -21,44 +23,8 @@ export const defaults = {
     },
     track: {
         all: true,
-        duration: 10
+        duration: 30
     },
-    hosts: [
-        
-    ], 
-    activeHours : [
-        { 
-            title: "Social media",
-            day: [], 
-            start : "08:00", 
-            end : "10:00"
-        }, 
-        { 
-            title: "News",
-            day: [], 
-            start : "08:00", 
-            end : "22:00"
-        }
-    ]
+    hosts: [], 
+    accessRules : []
 }
-
-
-/* 
-{
-            hostname: "stackoverflow.com",
-            track: true,
-            limits: [
-                {
-                    period: "day",
-                    threshold: 10,
-                    blockAfter: true
-                }
-            ],
-            activeHours: [
-                { 
-                    day: "", 
-                    start : "14:00", 
-                    end : "18:00"
-                }
-            ]
-        }*/

@@ -4,6 +4,12 @@ html, body {
   color:black;
 }
 
+hr{
+  border: none;
+  border-bottom: 1px solid #c4c4c4;
+  
+}
+
 #popup {
   width: 400px;
 }

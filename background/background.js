@@ -4,115 +4,79 @@ import { parseHostname } from '../component/util.js';
 import { add } from '../component/activity.js';
 import * as alarm from '../component/alarm.js';
 
-let t;
-let sessionStorage = [];
 const minIdleTime = 1000; //ms
+let _idleTimeout;
 let _settings;
+let _sessionStorage = [];
 
 async function init() {
   _settings = await settings.get();
 }
 
 async function onUserInteraction() {
-  let tabs = await browser.tabs.query({ active: true });
+  let activeTabs = await browser.tabs.query({ active: true });
 
-  for (let i = 0; i < tabs.length; i++) {
-    const tab = tabs[i];
-    const hostname = parseHostname(tab.url);
-
-    //check if hostname is tracked
-    if (await tracker.isTracked(hostname) === false)
+  for (let i = 0; i < activeTabs.length; i++) {
+    const hostname = parseHostname(activeTabs[i].url);
+        
+    // Continue to next active tab if hostname is not tracked
+    if (await tracker.isTracked(hostname) === false){
       continue;
-
-    let match = sessionStorage.filter(session => session.hostname === hostname);
-    let FilterhostSettings = _settings.hosts.filter(element => element.hostname === hostname);
-
-    // check if it is restricted      
-    if (FilterhostSettings.length) {
-      let hostSettings = FilterhostSettings[0];
-
-      if (hostSettings.activeHours.length && false) {
-        let block = true;
-        let now = new Date();
-        let tnow = now.getHours() + ":" + now.getMinutes();
-
-        for (let j = 0; j < hostSettings.activeHours.length; j++) {
-          const rule = hostSettings.activeHours[j];
-          if ((rule.day === "" || rule.day === now.getDay()) &&
-            tnow >= rule.start &&
-            tnow < rule.end) {
-            block = false;
-            break;
-          }
-        }
-
-        if (block === true) {
-          let expiredTabs = await browser.tabs.query({ url: "*://*." + hostname + "/*" });
-          expiredTabs.forEach(element => {
-            browser.tabs.executeScript(element.id, {
-              code: 'document.body.style.border = "5px solid red"'
-            });
-          });
-
-          browser.notifications.create("uid", {
-            "type": "basic",
-            "iconUrl": browser.runtime.getURL("icons/beasts-48.png"),
-            "title": "Access denied",
-            "message": "Access to " + hostname + " was blocked. "
-          });
-        }
-
-      }
     }
 
+    let sessionMatch = _sessionStorage.filter(element => element.hostname === hostname);
+    let filteredHostSettings = _settings.hosts.filter(element => element.hostname === hostname);
+    let hostSettings;
 
-    // Manages alarms when it's a new session
-    if (match.length === 0) {
-      //check if it has alarms
-      if (FilterhostSettings.length) {
-        alarm.init(FilterhostSettings[0]);
+    if (filteredHostSettings.length) {
+       hostSettings = filteredHostSettings[0];
+    }
+
+    // Init alarms when it's a new session
+    if (sessionMatch.length === 0) {
+      if (hostSettings && hostSettings.limits.length) {
+        alarm.init({hostname : hostname});
       }
 
-      console.log("session started: " + hostname);
-      sessionStorage.push({
+      console.log("Session started: " + hostname);
+      _sessionStorage.push({
         hostname: hostname,
         created: new Date()
       });
     }
-
   };
 
-  for (let i = 0; i < sessionStorage.length; i++) {
-    const session = sessionStorage[i];
-    let match = tabs.filter(t => { return parseHostname(t.url) === session.hostname });
-    if (match.length === 0) {
-
+  // Finalize dead sessions
+  for (let i = 0; i < _sessionStorage.length; i++) {
+    const session = _sessionStorage[i];
+    let sessionMatch = activeTabs.filter(element => parseHostname(element.url) === session.hostname );
+    if (sessionMatch.length === 0) {
       // Make sure to clear all alarms for the ended sessions.
       alarm.clear({ hostname: session.hostname });
 
       const duration = Math.round((new Date() - session.created));
-      console.log("session ended: " + session.hostname, duration / 1000);
+      console.log("Session ended: " + session.hostname, duration / 1000);
       await add(session.hostname, session.created.toJSON(), duration);
-      sessionStorage.splice(i, 1);
+      _sessionStorage.splice(i, 1);
     }
   };
 }
 
 async function OnTabActivated(activeInfo) {
-  clearTimeout(t);
-  t = setTimeout(onUserInteraction, minIdleTime);
+  clearTimeout(_idleTimeout);
+  _idleTimeout = setTimeout(onUserInteraction, minIdleTime);
 }
 
 async function OnTabUpdated(tabId, changeInfo, tabInfo) {
   if (changeInfo.status && changeInfo.status === "complete") {
-    clearTimeout(t);
-    t = setTimeout(onUserInteraction, minIdleTime);
+    clearTimeout(_idleTimeout);
+    _idleTimeout = setTimeout(onUserInteraction, minIdleTime);
   }
 }
 
 async function OnWindowFocusChanged(windowId) {
-  clearTimeout(t);
-  t = setTimeout(onUserInteraction, minIdleTime);
+  clearTimeout(_idleTimeout);
+  _idleTimeout = setTimeout(onUserInteraction, minIdleTime);
 }
 
 async function logStorageChange(changes, area) {
