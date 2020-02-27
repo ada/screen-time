@@ -1,9 +1,9 @@
 {
   "manifest_version": 2,
-  "name": "Browsing Time",
+  "name": "Time Analytics",
   "version": "1.0",
   "description": "Measue browsing time and set daily time limits.",
-  "homepage_url": "https://github.com/ada/screen-time",
+  "homepage_url": "https://github.com/",
   "icons": {
     "48": "./icons/beasts-48.png"
   },
@@ -21,10 +21,15 @@
   },
   "browser_action": {
     "default_icon": "./icons/beasts-32.png",
-    "default_title": "Browsing Time",
+    "default_title": "Time Analytics",
     "default_popup": "./popup/popup.html"
   },
   "background": {
     "page": "./background/background.html"
   }
+  /*"applications": {
+    "gecko": {
+      "id": "{daf44bf7-a45e-4450-979c-91cf07434c3d}"
+    }
+  }*/
 }

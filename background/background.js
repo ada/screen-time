@@ -17,8 +17,8 @@ async function onUserInteraction() {
   let activeTabs = await browser.tabs.query({ active: true });
 
   for (let i = 0; i < activeTabs.length; i++) {
-    const hostname = parseHostname(activeTabs[i].url);
-        
+    let hostname = parseHostname(activeTabs[i].url);
+    
     // Continue to next active tab if hostname is not tracked
     if (await tracker.isTracked(hostname) === false){
       continue;

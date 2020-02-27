@@ -178,7 +178,7 @@ async function initHostSettings(){
 
 async function init(tabs) {
     _hostname = parseHostname(tabs[0].url);
-    if (_hostname.length === 0)
+    if (_hostname.length === 0 || _hostname.indexOf(".") === -1)
         window.close();
 
     if (await isTracked(_hostname) === false) {

@@ -11,30 +11,53 @@
 <body> 
   <form>
     <section>
-      <h2>Tracking</h2>
+      <h3>Tracking</h3>
       <p>
         <input type="checkbox" id="checkboxTrackAll">
         <label for="checkboxTrackAll">Track all hostnames</label>
       </p>
 
       <p>
-        <p>Periodically remove data older than <span id="trackingDurationLabel"></span> days.</p>
-        <input type="range" id="trackingDuration" name="trackingDuration" min="7" max="30" value="30" step="1">
-      </p>
+        <table width="100%">
+          <tr>
+            <td width="75%">
+              <label for="trackingDuration">Periodically remove data older than <span id="trackingDurationLabel"></span> days.</label>
+            </td>
+          <td style="text-align: right;"> 
+            <input type="range" id="trackingDuration" name="trackingDuration" min="7" max="30" value="30" step="1">
+          </td>
+        </tr>
+        </table>
+        </p>
     </section>
+    <hr>
     <section>
-      <h2>Chart</h2>
-      <p>
-        <label for="defaultChartView">Default chart view:</label>
-        <select name="defaultChartView" id="defaultChartView" required>
-          <option value="1">Day</option>
-          <option value="7">Week</option>
-          <option value="30">Month</option>
-        </select>
+      <h3>Chart</h3>
+      <p></p>
+        <table width="100%">
+          <tr>
+            <td width="75%">
+              <label for="defaultChartView">Default chart view:</label>
+            </td>
+          <td style="text-align: right;">
+            <select name="defaultChartView" id="defaultChartView" required>
+              <option value="1">Day</option>
+              <option value="7">Week</option>
+              <option value="30">Month</option>
+            </select>
+          </td>
+        </tr>
+        </table>
       </p>
     </section>
     <hr>
-    <p><button type="reset">Reset settings</button></p>
+
+    <section>
+      <p><small style="color:gray">Browsing Time extension is opensource and available on Github.</small></p>
+      <p>
+        <button type="reset">Restore extension</button>
+      </p>
+    </section>
   </form>
 
 

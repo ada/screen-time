@@ -1,7 +1,8 @@
 import * as settings from "./settings.js";
 
 export async function isTracked(hostname) {
-    if (!hostname || hostname.length === 0)
+
+    if (!hostname || hostname.length === 0 || hostname.indexOf(".") === -1)
         return false;
 
     let _settings = await settings.get();
