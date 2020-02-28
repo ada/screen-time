@@ -24,7 +24,7 @@
 
           browser.notifications.create("uid", {
             "type": "basic",
-            "iconUrl": browser.runtime.getURL("icons/beasts-48.png"),
+            "iconUrl": browser.runtime.getURL("icons/font-awesome_4-7-0_hourglass-half_48.png"),
             "title": "Access denied",
             "message": "Access to " + hostname + " was blocked. "
           });

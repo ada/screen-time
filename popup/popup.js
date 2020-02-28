@@ -60,9 +60,9 @@ function updateAlarmLabel() {
 }
 
 function prepareGraphData(sessions, nDays) {
-    var data = { xdata: [], ydata: [] };
-
+    let data = { xdata: [], ydata: [] };
     let max = nDays === 1 ? 24 : nDays;
+
     for (var i = 0; i < max; i++) {
         let date = new Date();
         if (nDays === 1) {

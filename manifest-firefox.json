@@ -5,7 +5,7 @@
   "description": "Measue browsing time and set daily time limits.",
   "homepage_url": "https://github.com/",
   "icons": {
-    "48": "./icons/beasts-48.png"
+    "48": "./icons/font-awesome_4-7-0_hourglass-half_48.png"
   },
   "permissions": [
     "activeTab",

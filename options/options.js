@@ -42,5 +42,3 @@ async function onTrackingDurationChanged(){
 }
 
 document.addEventListener("DOMContentLoaded", init);
-
-console.log(chrome.devtools.panels.themeName);
