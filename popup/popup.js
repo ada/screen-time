@@ -5,11 +5,19 @@ import { get as getChartOptions } from '../component/chartOptions.js';
 import { isSameDay, isSameHour, parseHostname } from '../component/util.js';
 import * as alarm from '../component/alarm.js';
 
+// current hostname string
 let _hostname;
+
+// host object containg host information and alarms
 let _host;
+
+// chart object
 let _chart;
+
+//Local copy of the global settings
 let _settings;
 
+// UI references
 let UIRangeAlarm = document.getElementById("alarm");
 let UIRangeAlarmLabel = document.getElementById("alarmLabel"); 
 let UICheckboxBlockAfter = document.getElementById("blockAfter");
@@ -20,6 +28,9 @@ let UICanvasChart = document.getElementById('cchart');
 let UITitle = document.getElementById("title");
 let UISubtitle = document.getElementById("subtitle");
 
+/* 
+    Initialize event listeners
+*/
 function initEventListeners() {
     UIRangeAlarm.addEventListener("change", onAlarmSettingsChanged);
     UIRangeAlarm.addEventListener("input", updateAlarmLabel);
@@ -29,6 +40,9 @@ function initEventListeners() {
     UIButtonViewMonth.addEventListener("click", onChartSettingsChanged);
 }
 
+/* 
+    Handle alarms settings changes
+*/
 async function onAlarmSettingsChanged() {
     let i = _settings.hosts.findIndex(element => element.hostname === _hostname);
     let limitArray = [
@@ -54,11 +68,17 @@ async function onAlarmSettingsChanged() {
     await settings.set(_settings);
 }
 
+/* 
+    UI method to update Alarm range slider label
+*/
 function updateAlarmLabel() {
     let minutes = UIRangeAlarm.value;
     UIRangeAlarmLabel.innerHTML = minutes == 0 ? "set below." : "of <strong>" + minutes + " minutes</strong>.";
 }
 
+/* 
+    Prepare the X and Y arrays needed by the chart
+*/
 function prepareGraphData(sessions, nDays) {
     let data = { xdata: [], ydata: [] };
     let max = nDays === 1 ? 24 : nDays;
@@ -92,6 +112,9 @@ function prepareGraphData(sessions, nDays) {
     return data;
 }
 
+/* 
+    Update the subtitle based on active view and number of days. 
+*/
 function updateSubtitle(data, nDays) {
     let tot = data.ydata.reduce((accumulator, entry) => accumulator + entry, 0);
     let average = Math.round(tot / nDays);
@@ -106,6 +129,9 @@ function updateSubtitle(data, nDays) {
     UISubtitle.innerHTML = msg;
 }
 
+/* 
+    Update chart based on the selected active view
+*/
 function updateChart(data, nDays) {
     _chart.data.datasets[0].data = data.ydata;
     _chart.data.labels = data.xdata;
@@ -113,6 +139,9 @@ function updateChart(data, nDays) {
     _chart.update();
 }
 
+/* 
+    Handle active view change
+*/
 function onChartSettingsChanged(e) {
     let nDays = 7;
     switch (e.srcElement.id) {
@@ -142,6 +171,9 @@ function onChartSettingsChanged(e) {
     updateSubtitle(data, nDays);
 }
 
+/* 
+    Init chart
+*/
 async function initChart(data, nDays) {
     let UICanvasChartContext = UICanvasChart.getContext('2d');
     _chart = new Chart(UICanvasChartContext, {
@@ -167,6 +199,9 @@ async function initChart(data, nDays) {
     });
 }
 
+/* 
+    Retrieve host settings for the current hostname
+*/
 async function initHostSettings(){
     let i = _settings.hosts.findIndex(host => host.hostname === _hostname);
     if (i > -1) {
@@ -176,6 +211,10 @@ async function initHostSettings(){
     }
 }
 
+/* 
+    Run initialization once when the popup is shown. 
+    Init chart, subtitle, etc.
+*/
 async function init(tabs) {
     _hostname = parseHostname(tabs[0].url);
     if (_hostname.length === 0 || _hostname.indexOf(".") === -1)
@@ -199,4 +238,8 @@ async function init(tabs) {
     initHostSettings();
 }
 
+
+/* 
+    Retrieve the active tab where the popup is shown
+*/
 let tabs = browser.tabs.query({ active: true, currentWindow: true }).then(init);

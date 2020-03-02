@@ -1,6 +1,9 @@
 import { isEmptyObject } from "./util.js";
 
-async function set(e) {
+/* 
+    Set activities
+*/
+export async function set(e) {
     try {
         await browser.storage.sync.set({
             "sessions": e
@@ -10,16 +13,19 @@ async function set(e) {
     }
 }
 
-async function get(options) {
+/*
+    Get activites
+*/
+export async function get(options) {
     try {
         let res = await browser.storage.sync.get(["sessions"]);
-        
+
         if (isEmptyObject(res) === true)
             return [];
 
         if (options && options.hostname) {
             let index = res.sessions.findIndex(element => element.hostname === options.hostname);
-            return index === -1 ? {sessions:[], hostname:options.hostname} : res.sessions[index];
+            return index === -1 ? { sessions: [], hostname: options.hostname } : res.sessions[index];
         }
 
         return res.sessions;
@@ -28,11 +34,14 @@ async function get(options) {
     }
 }
 
-async function add(hostname, created, duration) {
+/*
+    Add a new activity
+*/
+export async function add(hostname, created, duration) {
     try {
         let sessions = await get();
         let index = sessions.findIndex(element => element.hostname === hostname);
-        
+
         if (index === -1) {
             sessions.push({
                 "hostname": hostname,
@@ -47,7 +56,3 @@ async function add(hostname, created, duration) {
         console.error(error);
     }
 }
-
-
-
-export { set, get, add };

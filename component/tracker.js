@@ -1,5 +1,8 @@
 import * as settings from "./settings.js";
 
+/*
+    Check wheter a hostname is tracked by the extension
+*/
 export async function isTracked(hostname) {
 
     if (!hostname || hostname.length === 0 || hostname.indexOf(".") === -1)
@@ -7,13 +10,16 @@ export async function isTracked(hostname) {
 
     let _settings = await settings.get();
 
-    if (_settings.track.all === true || _settings.hosts.filter(e => e.hostname == hostname &&  e.track === true).length > 1) {
+    if (_settings.track.all === true || _settings.hosts.filter(e => e.hostname == hostname && e.track === true).length > 1) {
         return true;
     } else {
         return false;
     }
 }
 
+/* 
+    Track a hostname
+*/
 export async function track(hostname) {
     let _settings = await settings.get();
     if (_settings.track.hosts.indexOf(hostname) === -1) {
@@ -22,6 +28,9 @@ export async function track(hostname) {
     }
 }
 
+/* 
+    Stop tracking a hostname
+*/
 export async function untrack() {
     let _settings = await settings.get();
     let index = _settings.track.hosts.indexOf(hostname);

@@ -1,5 +1,8 @@
 import { isEmptyObject } from "./util.js";
 
+/* 
+    Set settings object
+*/
 export async function set(obj) {
     await browser.storage.sync.set({
         "settings": obj
@@ -8,6 +11,9 @@ export async function set(obj) {
     console.log("Settings saved.");
 }
 
+/*
+    Get settings object. Return default settings if no settings where found. 
+*/
 export async function get() {
     let obj = await browser.storage.sync.get(["settings"]);
     if (isEmptyObject(obj) === true) {
@@ -17,6 +23,9 @@ export async function get() {
     return obj.settings;
 }
 
+/* 
+    Default settings when using the extension for the first time
+*/
 export const defaults = {
     chart: {
         nDays: 7

@@ -1,3 +1,6 @@
+/* 
+    Default chart options
+*/
 let defaultOptions = {
     legend: {
         display: false
@@ -38,16 +41,19 @@ let defaultOptions = {
 };
 
 
-export function get(nDays){
-    let options = defaultOptions; 
+/* 
+    Get a customized chart options based on number of days. 1: today, 7: week, 30: month
+*/
+export function get(nDays) {
+    let options = defaultOptions;
     if (nDays === 1) {
-        //delete(options.tooltips);
-        //delete(options.scales.xAxes[0].time.tooltipFormat);
+        delete (options.tooltips);
+        delete (options.scales.xAxes[0].time.tooltipFormat);
         options.scales.xAxes[0].time.unit = "hour";
-        return options; 
+        return options;
     } else if (nDays > 1 && nDays < 8) {
-        return defaultOptions; 
-    }else{
+        return defaultOptions;
+    } else {
         options.scales.xAxes[0].time.displayFormats.day = "D";
         return options;
     }
