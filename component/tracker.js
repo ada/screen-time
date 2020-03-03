@@ -10,7 +10,7 @@ export async function isTracked(hostname) {
 
     let _settings = await settings.get();
 
-    if (_settings.track.all === true || _settings.hosts.filter(e => e.hostname == hostname && e.track === true).length > 1) {
+    if (_settings.track.all === true || _settings.hosts.findIndex(e => e.hostname === hostname) > -1) {
         return true;
     } else {
         return false;
@@ -22,8 +22,12 @@ export async function isTracked(hostname) {
 */
 export async function track(hostname) {
     let _settings = await settings.get();
-    if (_settings.track.hosts.indexOf(hostname) === -1) {
-        _settings.track.hosts.push(hostname);
+    if (_settings.hosts.indexOf(hostname) === -1) {
+        _settings.hosts.push({
+            accessRules: [],
+            hostname: hostname,
+            limits: [],
+        });
         await settings.set(_settings);
     }
 }
@@ -31,12 +35,14 @@ export async function track(hostname) {
 /* 
     Stop tracking a hostname
 */
-export async function untrack() {
+export async function untrack(hostname) {
     let _settings = await settings.get();
-    let index = _settings.track.hosts.indexOf(hostname);
+    let index = _settings.hosts.findIndex(e => e.hostname === hostname);
 
-    if (index > -1)
-        _settings.track.hosts.splice(index, 1);
+    if (index > -1) {
+        _settings.hosts.splice(index, 1);
+        
+    }
 
     await settings.set(_settings);
 }

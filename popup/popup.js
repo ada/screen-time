@@ -1,9 +1,8 @@
 import * as settings from '../component/settings.js';
-import { isTracked } from '../component/tracker.js';
-import { get } from '../component/activity.js';
+import * as tracker from '../component/tracker.js';
+import * as activity from '../component/activity.js';
 import { get as getChartOptions } from '../component/chartOptions.js';
 import { isSameDay, isSameHour, parseHostname } from '../component/util.js';
-import * as alarm from '../component/alarm.js';
 
 // Current hostname string
 let _hostname;
@@ -30,19 +29,33 @@ let UIButtonViewMonth = document.getElementById("view-month");
 let UICanvasChart = document.getElementById('cchart');
 let UITitle = document.getElementById("title");
 let UISubtitle = document.getElementById("subtitle");
-
+let UIButtonEnableTracking = document.getElementById("enableTracking");
+let UIButtonDisableTracking = document.getElementById("disableTracking");
 /* 
     Initialize event listeners
 */
-function initEventListeners() {
-    UIRangeAlarm.addEventListener("change", onAlarmSettingsChanged);
-    UIRangeAlarm.addEventListener("input", updateAlarmLabel);
-    UICheckboxBlockAfter.addEventListener("change", onAlarmSettingsChanged);
-    UIButtonViewDay.addEventListener("click", onChartSettingsChanged);
-    UIButtonViewWeek.addEventListener("click", onChartSettingsChanged);
-    UIButtonViewMonth.addEventListener("click", onChartSettingsChanged);
-    browser.runtime.onMessage.addListener(handleMessage);
+
+UIRangeAlarm.addEventListener("change", onAlarmSettingsChanged);
+UIRangeAlarm.addEventListener("input", updateAlarmLabel);
+UICheckboxBlockAfter.addEventListener("change", onAlarmSettingsChanged);
+UIButtonViewDay.addEventListener("click", onChartSettingsChanged);
+UIButtonViewWeek.addEventListener("click", onChartSettingsChanged);
+UIButtonViewMonth.addEventListener("click", onChartSettingsChanged);
+UIButtonEnableTracking.addEventListener("click", track, true);
+UIButtonDisableTracking.addEventListener("click", untrack, false);
+browser.runtime.onMessage.addListener(handleMessage);
+
+async function track(track) {
+    tracker.track(_hostname);
+    location.reload();
 }
+
+async function untrack(track) {
+    tracker.untrack(_hostname);
+    activity.clear(_hostname);
+    location.reload();
+}
+
 
 /* 
     Handle alarms settings changes
@@ -109,7 +122,7 @@ function prepareGraphData(sessions, nDays) {
         }, 0);
 
         //convert duration from milliseconds to minutes
-        let _y = Math.round((duration / 1000) / 60); 
+        let _y = Math.round((duration / 1000) / 60);
         data.xdata.push(date);
         data.ydata.push(_y);
     }
@@ -211,8 +224,15 @@ async function initChart(data, nDays) {
 async function initHostSettings() {
     let i = _settings.hosts.findIndex(host => host.hostname === _hostname);
     if (i > -1) {
-        UIRangeAlarm.value = _settings.hosts[i].limits[0].threshold / 1000 / 60;
-        UICheckboxBlockAfter.checked = _settings.hosts[i].limits[0].blockAfter;
+        if (_settings.hosts[i].limits.length > 0){
+            UIRangeAlarm.value = _settings.hosts[i].limits[0].threshold / 1000 / 60;
+            UICheckboxBlockAfter.checked = _settings.hosts[i].limits[0].blockAfter;
+            
+        }else{
+            UIRangeAlarm.value = 0; 
+            UICheckboxBlockAfter.checked = false;
+        }
+
         updateAlarmLabel();
     }
 }
@@ -222,25 +242,27 @@ async function initHostSettings() {
     Init chart, subtitle, etc.
 */
 async function init(tabs) {
-    initEventListeners();
-
+    _settings = await settings.get();
     _hostname = parseHostname(tabs[0].url);
     if (_hostname.length === 0 || _hostname.indexOf(".") === -1)
         window.close();
 
-    if (await isTracked(_hostname) === false) {
+    if (await tracker.isTracked(_hostname) === false) {
         document.getElementById("schart").hidden = true;
         document.getElementById("stime").hidden = true;
         document.getElementById("strack").hidden = false;
         return;
+    } else {
+        if (_settings.track.all === false) {
+            document.getElementById("suntrack").hidden = false;
+        }
     }
 
+
+
     UITitle.textContent = "Time on " + _hostname;
-    _host = await get({ hostname: _hostname });
-    _settings = await settings.get();
-    //browser.runtime.sendMessage({ id: "GET_SESSION_CACHE", hostname: _hostname });
-    //_host.sessions.push(_sessionCache);
-    //console.log(_sessionCache);
+    _host = await activity.get({ hostname: _hostname });
+
     let data = prepareGraphData(_host.sessions, _settings.chart.nDays);
 
     initChart(data, _settings.chart.nDays);
@@ -280,16 +302,13 @@ function handleMessage(message) {
             duration = Math.round((new Date() - session.created)) / 1000;
             _sessionCache = { "created": session.created, "duration": duration };
             console.log(_sessionCache);
-
-            
         }
-
     }
-
 }
 
 
 browser.runtime.sendMessage({ id: "WRITE_CACHE_TO_STORAGE", hostname: _hostname });
+
 /* 
     Retrieve the active tab where the popup is shown
 */

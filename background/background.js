@@ -16,6 +16,12 @@ let _settings;
 // Temporary cache storage for sessions
 let _sessionCache = [];
 
+// Register listeners
+browser.tabs.onUpdated.addListener(OnTabUpdated);
+browser.tabs.onActivated.addListener(OnTabActivated);
+browser.windows.onFocusChanged.addListener(OnWindowFocusChanged);
+browser.runtime.onMessage.addListener(handleMessage);
+
 /*
   Run initialization once when browser starts. 
 */
@@ -23,11 +29,7 @@ async function init() {
   // Update local settings
   _settings = await settings.get();
 
-  // Register listeners
-  browser.tabs.onUpdated.addListener(OnTabUpdated);
-  browser.tabs.onActivated.addListener(OnTabActivated);
-  browser.windows.onFocusChanged.addListener(OnWindowFocusChanged);
-  browser.runtime.onMessage.addListener(handleMessage);
+
 
   // Write cache to storage periodically in case of browser or OS crash
   var intervalID = setInterval(writeCacheToStorage, 15 * 60000);
@@ -37,7 +39,7 @@ async function init() {
   let midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
   let msTillMidnight = midnight.getTime() - now.getTime(); // difference in milliseconds
   let midnightTimeout = setTimeout(writeCacheToStorage, msTillMidnight);
-  console.log(`Midnight task in ${msTillMidnight/1000} seconds.`);
+  //console.log(`Midnight task in ${msTillMidnight/1000} seconds.`);
 }
 
 /*
@@ -120,14 +122,16 @@ async function OnWindowFocusChanged(windowId) {
 }
 
 function handleMessage(message) {
-  console.log(message);
-  if (message.id === "GET_SESSION_CACHE") {
-    console.log("Sending: ", _sessionCache);
-    browser.runtime.sendMessage({ id: "SESSION_CACHE", data: _sessionCache });
-  } else if (message.id === "WRITE_CACHE_TO_STORAGE") {
-    writeCacheToStorage();
+  switch (message.id) {
+    case 'GET_SESSION_CACHE':
+      browser.runtime.sendMessage({ id: "SESSION_CACHE", data: _sessionCache });
+      break;
+    case 'WRITE_CACHE_TO_STORAGE':
+      writeCacheToStorage();
+      break; 
+    default:
+      break;
   }
-
 }
 
 /* 
@@ -138,7 +142,7 @@ async function writeCacheToStorage() {
   for (let i = 0; i < _sessionCache.length; i++) {
     const session = _sessionCache[i];
     const duration = Math.round((new Date() - session.created));
-    console.log("Session written to storage: " + session.hostname, duration);
+    //console.log("Session written to storage: " + session.hostname, duration);
     await add(session.hostname, session.created.toJSON(), duration);
     _sessionCache[i].created = new Date();
   }

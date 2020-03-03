@@ -25,7 +25,7 @@
   </section>
 
   <section id="stime">
-    <h3 hidden>Reduce your screen time</h3>
+    <h3 hidden>Reduce your web time</h3>
     <div class="flex">
       <div class="icon">
         <svg width="32" height="32" class="octicon octicon-bell" viewBox="0 0 14 16" version="1.1" aria-hidden="true">
@@ -45,7 +45,7 @@
   </section>
 
   <section id="strack" hidden>
-    <h3>Track my screen time</h3>
+    <h3>Track my surfing time</h3>
     <div class="flex">
       <div class="icon">
         <svg width="32" height="32" class="octicon octicon-plus" viewBox="0 0 12 16" version="1.1" aria-hidden="true">
@@ -54,10 +54,16 @@
       </div>
       <div class="content">
         <h4><input type="checkbox" id="track" hidden> Enable tracking</h4>
-        <p>Your screen time on this hostname will be tracked when you enable tracking.</p>
+        <p>Your surfing time on this hostname will be tracked when you enable tracking.</p>
+        <p><button type="button" id="enableTracking">Enable tracking</button></p>
       </div>
     </div>
   </section>
+
+  <section id="suntrack" hidden>
+    <p><button type="button" id="disableTracking">Disable tracking</button></p>
+  </section>
+
 
   <script type="module" src="../lib/browser-polyfill.js"></script>
   <script src="../lib/moment-with-locales.min.js"></script>

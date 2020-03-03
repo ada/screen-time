@@ -56,3 +56,19 @@ export async function add(hostname, created, duration) {
         console.error(error);
     }
 }
+
+/* 
+    Clear activities for a hostname or all activites
+*/
+export async function clear(hostname) {
+    let sessions = await get();
+
+    if (hostname.length > 0) {
+        let index = sessions.findIndex(element => element.hostname === hostname);
+        sessions.splice(index, 1);
+    } else {
+        sessions = [];
+    }
+
+    await set(sessions);
+}
