@@ -34,8 +34,9 @@ export async function set(hostname) {
     let sessions = activity.sessions || [];
     var now = new Date();
 
-    if (hostSettings.limits === undefined)
+    if(!hostSettings.hasOwnProperty('limits')){
         return;
+    }
 
     hostSettings.limits.forEach(limitation => {
         let currentUsage = sessions.reduce(function (accumulator, session) {

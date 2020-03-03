@@ -5,26 +5,29 @@ import { get as getChartOptions } from '../component/chartOptions.js';
 import { isSameDay, isSameHour, parseHostname } from '../component/util.js';
 import * as alarm from '../component/alarm.js';
 
-// current hostname string
+// Current hostname string
 let _hostname;
 
-// host object containg host information and alarms
+// Host object containg host information and alarms
 let _host;
 
-// chart object
+// Chart object
 let _chart;
 
-//Local copy of the global settings
+// Local copy of the global settings
 let _settings;
+
+// Usage duration from the current session cache storage
+let _sessionCache = {};
 
 // UI references
 let UIRangeAlarm = document.getElementById("alarm");
-let UIRangeAlarmLabel = document.getElementById("alarmLabel"); 
+let UIRangeAlarmLabel = document.getElementById("alarmLabel");
 let UICheckboxBlockAfter = document.getElementById("blockAfter");
 let UIButtonViewDay = document.getElementById("view-day");
 let UIButtonViewWeek = document.getElementById("view-week");
 let UIButtonViewMonth = document.getElementById("view-month");
-let UICanvasChart = document.getElementById('cchart'); 
+let UICanvasChart = document.getElementById('cchart');
 let UITitle = document.getElementById("title");
 let UISubtitle = document.getElementById("subtitle");
 
@@ -38,6 +41,7 @@ function initEventListeners() {
     UIButtonViewDay.addEventListener("click", onChartSettingsChanged);
     UIButtonViewWeek.addEventListener("click", onChartSettingsChanged);
     UIButtonViewMonth.addEventListener("click", onChartSettingsChanged);
+    browser.runtime.onMessage.addListener(handleMessage);
 }
 
 /* 
@@ -51,7 +55,7 @@ async function onAlarmSettingsChanged() {
             threshold: UIRangeAlarm.value * 60 * 1000,
             blockAfter: UICheckboxBlockAfter.checked
         }
-    ]; 
+    ];
 
     if (i === -1) {
         _settings.hosts.push(
@@ -104,7 +108,8 @@ function prepareGraphData(sessions, nDays) {
             return accumulator;
         }, 0);
 
-        let _y = Math.round((duration / 1000) / 60); //convert to minutes
+        //convert duration from milliseconds to minutes
+        let _y = Math.round((duration / 1000) / 60); 
         data.xdata.push(date);
         data.ydata.push(_y);
     }
@@ -125,7 +130,7 @@ function updateSubtitle(data, nDays) {
     } else {
         msg = "On average you spent <strong>" + average + " minutes/day</strong> on this webpage during the last " + nDays + " days.";
     }
-    
+
     UISubtitle.innerHTML = msg;
 }
 
@@ -175,6 +180,7 @@ function onChartSettingsChanged(e) {
     Init chart
 */
 async function initChart(data, nDays) {
+    console.log(data);
     let UICanvasChartContext = UICanvasChart.getContext('2d');
     _chart = new Chart(UICanvasChartContext, {
         type: 'bar',
@@ -202,10 +208,10 @@ async function initChart(data, nDays) {
 /* 
     Retrieve host settings for the current hostname
 */
-async function initHostSettings(){
+async function initHostSettings() {
     let i = _settings.hosts.findIndex(host => host.hostname === _hostname);
     if (i > -1) {
-        UIRangeAlarm.value = _settings.hosts[i].limits[0].threshold/1000/60;
+        UIRangeAlarm.value = _settings.hosts[i].limits[0].threshold / 1000 / 60;
         UICheckboxBlockAfter.checked = _settings.hosts[i].limits[0].blockAfter;
         updateAlarmLabel();
     }
@@ -216,6 +222,8 @@ async function initHostSettings(){
     Init chart, subtitle, etc.
 */
 async function init(tabs) {
+    initEventListeners();
+
     _hostname = parseHostname(tabs[0].url);
     if (_hostname.length === 0 || _hostname.indexOf(".") === -1)
         window.close();
@@ -230,16 +238,59 @@ async function init(tabs) {
     UITitle.textContent = "Time on " + _hostname;
     _host = await get({ hostname: _hostname });
     _settings = await settings.get();
+    //browser.runtime.sendMessage({ id: "GET_SESSION_CACHE", hostname: _hostname });
+    //_host.sessions.push(_sessionCache);
+    //console.log(_sessionCache);
     let data = prepareGraphData(_host.sessions, _settings.chart.nDays);
-    
+
     initChart(data, _settings.chart.nDays);
     updateSubtitle(data, _settings.chart.nDays);
-    initEventListeners();
     initHostSettings();
+
+
+}
+
+function handleCurrentSessionResponse(message) {
+    console.log(`Message from the background script:  ${message.response}`);
+}
+
+function handleError(error) {
+    console.log(`Error: ${error}`);
+}
+
+function getCurrentSessionData(e) {
+    var sending = browser.runtime.sendMessage({
+        greeting: "Greeting from the content script"
+    });
+    sending.then(handleCurrentSessionResponse, handleError);
 }
 
 
 /* 
+    Handle receviving messages
+*/
+function handleMessage(message) {
+    console.log("Received: ", message);
+
+    if (message.id === "SESSION_CACHE") {
+        let sessionMatch = message.data.filter(element => element.hostname === _hostname);
+        console.log(sessionMatch);
+        if (sessionMatch.lenght > 0) {
+            let session = sessionMatch[0];
+            duration = Math.round((new Date() - session.created)) / 1000;
+            _sessionCache = { "created": session.created, "duration": duration };
+            console.log(_sessionCache);
+
+            
+        }
+
+    }
+
+}
+
+
+browser.runtime.sendMessage({ id: "WRITE_CACHE_TO_STORAGE", hostname: _hostname });
+/* 
     Retrieve the active tab where the popup is shown
 */
-let tabs = browser.tabs.query({ active: true, currentWindow: true }).then(init);
+browser.tabs.query({ active: true, currentWindow: true }).then(init);

@@ -13,8 +13,8 @@ let _idleTimeout;
 // Copy of global settings
 let _settings;
 
-// Temporary storage for sessions
-let _sessionStorage = [];
+// Temporary cache storage for sessions
+let _sessionCache = [];
 
 /*
   Run initialization once when browser starts. 
@@ -27,6 +27,17 @@ async function init() {
   browser.tabs.onUpdated.addListener(OnTabUpdated);
   browser.tabs.onActivated.addListener(OnTabActivated);
   browser.windows.onFocusChanged.addListener(OnWindowFocusChanged);
+  browser.runtime.onMessage.addListener(handleMessage);
+
+  // Write cache to storage periodically in case of browser or OS crash
+  var intervalID = setInterval(writeCacheToStorage, 15 * 60000);
+
+  // Write cache to storage at midnight
+  let now = new Date();
+  let midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
+  let msTillMidnight = midnight.getTime() - now.getTime(); // difference in milliseconds
+  let midnightTimeout = setTimeout(writeCacheToStorage, msTillMidnight);
+  console.log(`Midnight task in ${msTillMidnight/1000} seconds.`);
 }
 
 /*
@@ -43,7 +54,7 @@ async function onUserInteraction() {
       continue;
     }
 
-    let sessionMatch = _sessionStorage.filter(element => element.hostname === hostname);
+    let sessionMatch = _sessionCache.filter(element => element.hostname === hostname);
     let filteredHostSettings = _settings.hosts.filter(element => element.hostname === hostname);
     let hostSettings;
 
@@ -58,7 +69,7 @@ async function onUserInteraction() {
       }
 
       console.log("Session started: " + hostname);
-      _sessionStorage.push({
+      _sessionCache.push({
         hostname: hostname,
         created: new Date()
       });
@@ -66,17 +77,17 @@ async function onUserInteraction() {
   };
 
   // Finalize dead sessions
-  for (let i = 0; i < _sessionStorage.length; i++) {
-    const session = _sessionStorage[i];
+  for (let i = 0; i < _sessionCache.length; i++) {
+    const session = _sessionCache[i];
     let sessionMatch = activeTabs.filter(element => parseHostname(element.url) === session.hostname);
     if (sessionMatch.length === 0) {
       // Make sure to clear all alarms for the ended sessions.
       alarm.clear(session.hostname);
 
       const duration = Math.round((new Date() - session.created));
-      console.log("Session ended: " + session.hostname, duration / 1000);
+      console.log("Session ended: " + session.hostname, duration);
       await add(session.hostname, session.created.toJSON(), duration);
-      _sessionStorage.splice(i, 1);
+      _sessionCache.splice(i, 1);
     }
   };
 }
@@ -108,5 +119,29 @@ async function OnWindowFocusChanged(windowId) {
   _idleTimeout = setTimeout(onUserInteraction, minIdleTime);
 }
 
+function handleMessage(message) {
+  console.log(message);
+  if (message.id === "GET_SESSION_CACHE") {
+    console.log("Sending: ", _sessionCache);
+    browser.runtime.sendMessage({ id: "SESSION_CACHE", data: _sessionCache });
+  } else if (message.id === "WRITE_CACHE_TO_STORAGE") {
+    writeCacheToStorage();
+  }
+
+}
+
+/* 
+  Write all cache entries to local storage and reset creation date. 
+  This is useful when clocks changes from 23:59:59 to 00:00:00 thus seperating dates.
+*/
+async function writeCacheToStorage() {
+  for (let i = 0; i < _sessionCache.length; i++) {
+    const session = _sessionCache[i];
+    const duration = Math.round((new Date() - session.created));
+    console.log("Session written to storage: " + session.hostname, duration);
+    await add(session.hostname, session.created.toJSON(), duration);
+    _sessionCache[i].created = new Date();
+  }
+}
 
 init();
