@@ -1,7 +1,7 @@
 import * as settings from '../component/settings.js';
 import * as tracker from '../component/tracker.js';
 import { parseHostname } from '../component/util.js';
-import { add } from '../component/activity.js';
+import { add, clearOldEntries } from '../component/activity.js';
 import * as alarm from '../component/alarm.js';
 
 // Minimum idle time in milliseconds to trigger user interactivity
@@ -29,7 +29,10 @@ async function init() {
   // Update local settings
   _settings = await settings.get();
 
-
+  //Clear old entries
+  var threshold = new Date(); 
+  threshold.setDate(threshold.getDate() - _settings.track.duration);
+  clearOldEntries(threshold);
 
   // Write cache to storage periodically in case of browser or OS crash
   var intervalID = setInterval(writeCacheToStorage, 15 * 60000);
@@ -65,11 +68,13 @@ async function onUserInteraction() {
     }
 
     // Init alarms when it's a new session
-    if (sessionMatch.length === 0) {
-      if (hostSettings && hostSettings.limits.length) {
-        alarm.set(hostname);
-      }
+    if (hostSettings && hostSettings.limits.length) {
+      console.log("Setting alarms");
+      alarm.clear(hostname);
+      alarm.set(hostname);
+    }
 
+    if (sessionMatch.length === 0) {
       console.log("Session started: " + hostname);
       _sessionCache.push({
         hostname: hostname,

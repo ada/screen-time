@@ -107,7 +107,7 @@ async function sessionExpirationWarning(options) {
         "message": "Your daily limit on " + options.hostname + " will be reached in " + options.timeLeft + " seconds."
     });
 
-    setTimeout(ClearNotificationWithUID, 10000, uid);
+    //setTimeout(ClearNotificationWithUID, 10000, uid);
 }
 
 /*
@@ -115,7 +115,7 @@ async function sessionExpirationWarning(options) {
 */
 async function onDailyLimitReached(options) {
     var uid = "expired_" + options.hostname;
-    ClearNotificationWithUID(uid);
+    //ClearNotificationWithUID(uid);
 
     browser.notifications.create(uid, {
         "type": "basic",
@@ -124,7 +124,7 @@ async function onDailyLimitReached(options) {
         "message": "You've reached your daily limit for " + options.hostname + "."
     });
 
-    setTimeout(ClearNotificationWithUID, 10000, uid);
+    setTimeout(ClearNotificationWithUID, 30000, uid);
 
     if (options.blockAfter === true) {
         let tabIds = [];
@@ -133,7 +133,7 @@ async function onDailyLimitReached(options) {
         for (let i = 0; i < tabs.length; i++) {
             const tab = tabs[i];
             let executing = browser.tabs.executeScript(tab.id, {
-                code: 'document.body.style.border = "10px solid yellow"; document.body.textContent = "Website blocked by Screen Time."; document.body.style.padding = "10px"; document.body.style.textAlign = "center"'
+                code: 'document.body.textContent = "Website blocked by Web Time."; document.body.style.background = "black"; document.body.style.color = "gray"; document.body.style.textAlign = "center"'
             });
             tabIds.push(tab.id);
         }
