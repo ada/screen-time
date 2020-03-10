@@ -1,6 +1,7 @@
 import * as settings from '../component/settings.js';
 import * as tracker from '../component/tracker.js';
 import * as activity from '../component/activity.js';
+import * as alarm from '../component/alarm.js';
 import { get as getChartOptions } from '../component/chartOptions.js';
 import { isSameDay, isSameHour, parseHostname } from '../component/util.js';
 
@@ -43,7 +44,7 @@ UIButtonViewWeek.addEventListener("click", onChartSettingsChanged);
 UIButtonViewMonth.addEventListener("click", onChartSettingsChanged);
 UIButtonEnableTracking.addEventListener("click", track, true);
 UIButtonDisableTracking.addEventListener("click", untrack, false);
-browser.runtime.onMessage.addListener(handleMessage);
+
 
 async function track(track) {
     tracker.track(_hostname);
@@ -70,6 +71,10 @@ async function onAlarmSettingsChanged() {
         }
     ];
 
+    if(UIRangeAlarm.value === 0){
+        limitArray = [];
+    } 
+
     if (i === -1) {
         _settings.hosts.push(
             {
@@ -83,6 +88,8 @@ async function onAlarmSettingsChanged() {
     }
 
     await settings.set(_settings);
+    await alarm.clear(_hostname);
+    await alarm.set(_hostname);
 }
 
 /* 
@@ -174,19 +181,39 @@ function onChartSettingsChanged(e) {
             break;
     }
 
+    let data = prepareGraphData(_host.sessions, nDays);
+    updateChart(data, nDays);
+    updateSubtitle(data, nDays);
+    updateChartSubtitle(nDays);
+}
+
+/* 
+    High light the button corresponding to the active nDays
+*/
+function updateChartSubtitle(nDays){
     let _cp = document.getElementById("chartPeriod").getElementsByClassName("btn-link");
+    
     for (let index = 0; index < _cp.length; index++) {
         const element = _cp[index];
         element.disabled = false;
         element.classList.remove("btn-disabled");
     }
-    let _curr = document.getElementById(e.srcElement.id);
+    let selectedId = "view-week";
+    switch (nDays) {
+        case 1:
+            selectedId = "view-day";
+            break;
+        case 30: 
+            selectedId = "view-month";
+            break;
+        default:
+            selectedId = "view-week";
+            break;
+    }
+    
+    let _curr = document.getElementById(selectedId);
     _curr.classList.add("btn-disabled");
     _curr.disabled = true;
-
-    let data = prepareGraphData(_host.sessions, nDays);
-    updateChart(data, nDays);
-    updateSubtitle(data, nDays);
 }
 
 /* 
@@ -243,6 +270,8 @@ async function initHostSettings() {
 */
 async function init(tabs) {
     _settings = await settings.get();
+    
+
     _hostname = parseHostname(tabs[0].url);
     if (_hostname.length === 0 || _hostname.indexOf(".") === -1)
         window.close();
@@ -258,8 +287,6 @@ async function init(tabs) {
         }
     }
 
-
-
     UITitle.textContent = "Time on " + _hostname;
     _host = await activity.get({ hostname: _hostname });
 
@@ -267,46 +294,13 @@ async function init(tabs) {
 
     initChart(data, _settings.chart.nDays);
     updateSubtitle(data, _settings.chart.nDays);
+    updateChartSubtitle(_settings.chart.nDays);
     initHostSettings();
-
-
 }
-
-function handleCurrentSessionResponse(message) {
-    console.log(`Message from the background script:  ${message.response}`);
-}
-
-function handleError(error) {
-    console.log(`Error: ${error}`);
-}
-
-function getCurrentSessionData(e) {
-    var sending = browser.runtime.sendMessage({
-        greeting: "Greeting from the content script"
-    });
-    sending.then(handleCurrentSessionResponse, handleError);
-}
-
 
 /* 
-    Handle receviving messages
+    Notify background.js to write current cache to disk. This to get the most recent data.
 */
-function handleMessage(message) {
-    console.log("Received: ", message);
-
-    if (message.id === "SESSION_CACHE") {
-        let sessionMatch = message.data.filter(element => element.hostname === _hostname);
-        console.log(sessionMatch);
-        if (sessionMatch.lenght > 0) {
-            let session = sessionMatch[0];
-            duration = Math.round((new Date() - session.created)) / 1000;
-            _sessionCache = { "created": session.created, "duration": duration };
-            console.log(_sessionCache);
-        }
-    }
-}
-
-
 browser.runtime.sendMessage({ id: "WRITE_CACHE_TO_STORAGE", hostname: _hostname });
 
 /* 
