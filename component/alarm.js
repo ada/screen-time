@@ -9,7 +9,7 @@ export var alarms = [];
 */
 export async function clear(hostname) {
     if (hostname === undefined) {
-        throw new Error("Hostname is not provided.");
+        throw new Error("Hostname is undefined.");
     }
 
     var filteredAlarms = alarms.filter(alarm => alarm.hostname === hostname);
@@ -25,63 +25,69 @@ export async function clear(hostname) {
 */
 export async function set(hostname) {
     if (hostname === undefined) {
-        throw new Error("Hostname is not provided.");
+        throw new Error("Hostname is undefined.");
     }
 
     let _settings = await settings.get();
     let hostSettings = _settings.hosts.filter(element => element.hostname === hostname)[0];
+    
+    if (!hostsettings || hostSettings === undefined) {
+        return;
+    }
+
     let activity = await get({ hostname: hostname });
     let sessions = activity.sessions || [];
     var now = new Date();
 
-    if(!hostSettings.hasOwnProperty('limits')){
+    if (!hostSettings.hasOwnProperty('limits')) {
         return;
     }
 
     hostSettings.limits.forEach(limitation => {
-        let currentUsage = sessions.reduce(function (accumulator, session) {
-            let created = new Date(session.created);
+        if (limitation.threshold !== 0) {
+            let currentUsage = sessions.reduce(function (accumulator, session) {
+                let created = new Date(session.created);
 
-            if (limitation.period === 'day') {
-                return isSameDay(now, created) ? accumulator + session.duration : accumulator;
-            } else {
-                throw new Error("Limitation type not suppoed.");
-            }
-        }, 0);
+                if (limitation.period === 'day') {
+                    return isSameDay(now, created) ? accumulator + session.duration : accumulator;
+                } else {
+                    throw new Error("Limitation type not suppoed.");
+                }
+            }, 0);
 
-
-        if (currentUsage >= limitation.threshold) {
-            onDailyLimitReached({
-                hostname: hostname,
-                blockAfter: limitation.blockAfter
-            });
-        } else {
-            var timeLeft = limitation.threshold - currentUsage;
-            console.log("current usage [m] " + currentUsage / 1000 / 60);
-            console.log("time left [m] " + timeLeft / 1000 / 60);
-            console.log("Setting an alarm for s: " + timeLeft / 1000);
-
-            if (limitation.blockAfter === true) {
-                var wt = timeLeft - 60000 <= 0 ? 50 : timeLeft - 60000;
-                var t = setTimeout(sessionExpirationWarning, wt, {
+            if (currentUsage >= limitation.threshold) {
+                onDailyLimitReached({
                     hostname: hostname,
-                    timeLeft: 60
+                    blockAfter: limitation.blockAfter
                 });
+            } else {
+                var timeLeft = limitation.threshold - currentUsage;
+                console.log("current usage [m] " + currentUsage / 1000 / 60);
+                console.log("time left [m] " + timeLeft / 1000 / 60);
+                console.log("Setting an alarm for s: " + timeLeft / 1000);
+
+                if (limitation.blockAfter === true) {
+                    var wt = timeLeft - 60000 <= 0 ? 50 : timeLeft - 60000;
+                    var t = setTimeout(sessionExpirationWarning, wt, {
+                        hostname: hostname,
+                        timeLeft: 60
+                    });
+                    alarms.push({
+                        hostname: hostname,
+                        alarm: t
+                    })
+                }
+
+                var t = setTimeout(onDailyLimitReached, timeLeft, {
+                    hostname: hostname,
+                    blockAfter: limitation.blockAfter
+                });
+
                 alarms.push({
                     hostname: hostname,
                     alarm: t
                 })
             }
-
-            var t = setTimeout(onDailyLimitReached, timeLeft, {
-                hostname: hostname,
-                blockAfter: limitation.blockAfter
-            });
-
-            alarms.push({
-                hostname: hostname,
-                alarm: t
-            })
         }
     });
 }

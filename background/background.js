@@ -128,13 +128,11 @@ async function OnWindowFocusChanged(windowId) {
 
 function handleMessage(message) {
   switch (message.id) {
-    case 'GET_SESSION_CACHE':
-      browser.runtime.sendMessage({ id: "SESSION_CACHE", data: _sessionCache });
-      break;
     case 'WRITE_CACHE_TO_STORAGE':
       writeCacheToStorage();
       break; 
     default:
+      throw new Error(`Message id "${message.id}" is not implementd.`)
       break;
   }
 }
