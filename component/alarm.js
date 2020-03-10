@@ -31,7 +31,7 @@ export async function set(hostname) {
     let _settings = await settings.get();
     let hostSettings = _settings.hosts.filter(element => element.hostname === hostname)[0];
     
-    if (!hostsettings || hostSettings === undefined) {
+    if (!hostSettings || hostSettings === undefined) {
         return;
     }
 
