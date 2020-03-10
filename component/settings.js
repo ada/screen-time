@@ -35,5 +35,6 @@ export const defaults = {
         duration: 30
     },
     hosts: [], 
-    accessRules : []
+    accessRules : [], 
+    theme : "light"
 }

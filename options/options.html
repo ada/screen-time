@@ -24,7 +24,7 @@
               <label for="trackingDuration">Periodically remove data older than <span id="trackingDurationLabel"></span> days.</label>
             </td>
           <td style="text-align: right;"> 
-            <input type="range" id="trackingDuration" name="trackingDuration" min="7" max="30" value="30" step="1">
+            <input type="range" id="trackingDuration" name="trackingDuration" min="7" max="30" value="30" step="1" required>
           </td>
         </tr>
         </table>
@@ -52,9 +52,28 @@
     </section>
 
     <section>
+      <h3>Theme</h3>
+      <p></p>
+        <table width="100%">
+          <tr>
+            <td width="75%">
+              <label for="theme">Default theme:</label>
+            </td>
+          <td style="text-align: right;">
+            <select name="theme" id="theme" required>
+              <option value="light">Light</option>
+            </select>
+          </td>
+        </tr>
+        </table>
+      </p>
+    </section>
+
+    <section>
       <h3>Data</h3>
-      <p>Restoring the extension removes all data and resets all settings.</p>
-      <p><button type="reset">Restore extension</button></p>
+      <p>Resetting the extension settings, clears all the extension settings and reminders/rules for individual hostnames.</p>
+      <p><button id="resetSettings" type="button">Reset settings</button></p>
+      <p><button id="resetData"  type="button">Clear data</button></p>
     </section>
 
     <p style="margin: 8px;"><small style="color:gray">This extension is opensource and available on <a href="https://github.com/ada/web-time" title="Repository link">github.com/ada/web-time</a>.</small></p>
