@@ -3,6 +3,15 @@ import { isSameDay } from './util.js';
 import * as settings from '../component/settings.js';
 
 export var alarms = [];
+var UID_PREFIX_EXPIRED = "expired_";
+var UID_PREFIX_REMINDER = "reminder_";
+
+/* 
+    Print all alarms
+*/
+export async function print(){
+    console.log(alarms);
+}
 
 /* 
     Clear all alarms for the given hostname
@@ -12,12 +21,17 @@ export async function clear(hostname) {
         throw new Error("Hostname is undefined.");
     }
 
+    ClearNotificationWithUID(UID_PREFIX_EXPIRED + hostname); 
+    ClearNotificationWithUID(UID_PREFIX_REMINDER + hostname);
+
     var filteredAlarms = alarms.filter(alarm => alarm.hostname === hostname);
     for (let i = 0; i < filteredAlarms.length; i++) {
         const a = filteredAlarms[i];
         clearTimeout(a.alarm);
         alarms.splice(alarms.indexOf(a), 1);
     }
+
+    print();
 }
 
 /* 
@@ -35,13 +49,13 @@ export async function set(hostname) {
         return;
     }
 
-    let activity = await get({ hostname: hostname });
-    let sessions = activity.sessions || [];
-    var now = new Date();
-
     if (!hostSettings.hasOwnProperty('limits')) {
         return;
     }
+
+    let activity = await get({ hostname: hostname });
+    let sessions = activity.sessions || [];
+    var now = new Date();
 
     hostSettings.limits.forEach(limitation => {
         if (limitation.threshold !== 0) {
@@ -62,9 +76,9 @@ export async function set(hostname) {
                 });
             } else {
                 var timeLeft = limitation.threshold - currentUsage;
-                console.log("current usage [m] " + currentUsage / 1000 / 60);
-                console.log("time left [m] " + timeLeft / 1000 / 60);
-                console.log("Setting an alarm for s: " + timeLeft / 1000);
+                console.log(`current usage: ${currentUsage / 1000 / 60} minutes`);
+                console.log(`time left: ${timeLeft / 1000 / 60} minutes`);
+                console.log(`Setting an alarm for ${timeLeft / 1000} seconds.`);
 
                 if (limitation.blockAfter === true) {
                     var wt = timeLeft - 60000 <= 0 ? 50 : timeLeft - 60000;
@@ -90,6 +104,8 @@ export async function set(hostname) {
             }
         }
     });
+
+    print();
 }
 
 /* 
@@ -103,8 +119,8 @@ async function ClearNotificationWithUID(uid) {
     Create and show a notification for an already expired session
 */
 async function sessionExpirationWarning(options) {
-    var uid = "warning_" + options.hostname;
-    ClearNotificationWithUID(uid);
+    var uid = UID_PREFIX_REMINDER + options.hostname;
+    //ClearNotificationWithUID(uid);
 
     browser.notifications.create(uid, {
         "type": "basic",
@@ -120,7 +136,7 @@ async function sessionExpirationWarning(options) {
     Create and show an expiration notification warning
 */
 async function onDailyLimitReached(options) {
-    var uid = "expired_" + options.hostname;
+    var uid = UID_PREFIX_EXPIRED + options.hostname;
     //ClearNotificationWithUID(uid);
 
     browser.notifications.create(uid, {
@@ -130,20 +146,16 @@ async function onDailyLimitReached(options) {
         "message": "You've reached your daily limit for " + options.hostname + "."
     });
 
-    setTimeout(ClearNotificationWithUID, 30000, uid);
+    //setTimeout(ClearNotificationWithUID, 30000, uid);
 
     if (options.blockAfter === true) {
-        let tabIds = [];
         let tabs = await browser.tabs.query({ url: "*://*." + options.hostname + "/*" });
-
         for (let i = 0; i < tabs.length; i++) {
             const tab = tabs[i];
-            let executing = browser.tabs.executeScript(tab.id, {
+            browser.tabs.executeScript(tab.id, {
                 code: 'document.body.textContent = "Website blocked by Web Time."; document.body.style.background = "black"; document.body.style.color = "gray"; document.body.style.textAlign = "center"'
             });
-            tabIds.push(tab.id);
         }
-        //browser.tabs.remove(tabIds);
     }
 
 }

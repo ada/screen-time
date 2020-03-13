@@ -5,7 +5,7 @@ import { isEmptyObject } from "./util.js";
 */
 export async function set(e) {
     try {
-        await browser.storage.sync.set({
+        await browser.storage.local.set({
             "sessions": e
         });
     } catch (error) {
@@ -18,7 +18,7 @@ export async function set(e) {
 */
 export async function get(options) {
     try {
-        let res = await browser.storage.sync.get(["sessions"]);
+        let res = await browser.storage.local.get(["sessions"]);
 
         if (isEmptyObject(res) === true)
             return [];
@@ -73,15 +73,22 @@ export async function clear(hostname) {
     await set(sessions);
 }
 
-export async function clearOldEntries(threshold){
+export async function clearEntries(threshold, pre = true){
     let sessions = await get();
-    console.log("Clearing entries older than: ", threshold);
     for (let i = 0; i < sessions.length; i++) {
-        console.log("Analyzing " + sessions[i].hostname);
         for (let j = 0; j < sessions[i].sessions.length; j++) {
-            if (sessions[i].sessions[j].created < threshold) {
-                console.log("Deleting ", sessions[i].sessions[j]);
-                sessions[i].sessions.splice(j, 1);
+            var creationDate = new Date(sessions[i].sessions[j].created); 
+            if (pre === true) {
+                if (creationDate < threshold) {
+                    console.log("Deleting ", sessions[i].sessions[j]);
+                    sessions[i].sessions.splice(j, 1);
+                }
+            }else{
+                if (creationDate > threshold) {
+                    console.log("Deleting ", sessions[i].sessions[j]);
+                    sessions[i].sessions.splice(j, 1);
+                }
+                
             }
         }
     }

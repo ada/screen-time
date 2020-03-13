@@ -1,7 +1,6 @@
 import * as settings from '../component/settings.js';
 import * as tracker from '../component/tracker.js';
 import * as activity from '../component/activity.js';
-import * as alarm from '../component/alarm.js';
 import { get as getChartOptions } from '../component/chartOptions.js';
 import { isSameDay, isSameHour, parseHostname } from '../component/util.js';
 
@@ -32,10 +31,10 @@ let UITitle = document.getElementById("title");
 let UISubtitle = document.getElementById("subtitle");
 let UIButtonEnableTracking = document.getElementById("enableTracking");
 let UIButtonDisableTracking = document.getElementById("disableTracking");
+
 /* 
     Initialize event listeners
 */
-
 UIRangeAlarm.addEventListener("change", onAlarmSettingsChanged);
 UIRangeAlarm.addEventListener("input", updateAlarmLabel);
 UICheckboxBlockAfter.addEventListener("change", onAlarmSettingsChanged);
@@ -88,14 +87,13 @@ async function onAlarmSettingsChanged() {
     }
 
     await settings.set(_settings);
-    await alarm.clear(_hostname);
-    await alarm.set(_hostname);
+    browser.runtime.sendMessage({ id: "RESET_ALARM_FOR_HOSTNAME", hostname: _hostname });
 }
 
 /* 
     UI method to update Alarm range slider label
 */
-function updateAlarmLabel() {
+async function updateAlarmLabel() {
     let minutes = UIRangeAlarm.value;
     UIRangeAlarmLabel.innerHTML = minutes == 0 ? "set below." : "of <strong>" + minutes + " minutes</strong>.";
 }
@@ -103,16 +101,22 @@ function updateAlarmLabel() {
 /* 
     Prepare the X and Y arrays needed by the chart
 */
-function prepareGraphData(sessions, nDays) {
+async function prepareGraphData(sessions, nDays) {
     let data = { xdata: [], ydata: [] };
     let max = nDays === 1 ? 24 : nDays;
+    let mode = "day";
 
-    for (var i = 0; i < max; i++) {
+    for (var i = 0; i<max; i++) {
         let date = new Date();
         if (nDays === 1) {
             date.setHours(i);
+            data.xdata.push(moment(date).format("H"));
+        } else if (nDays === 7){
+            date.setDate(date.getDate() - i);
+            data.xdata.push(moment(date).format("ddd"));
         } else {
             date.setDate(date.getDate() - i);
+            data.xdata.push(moment(date).format("D"));
         }
 
         let duration = sessions.reduce(function (accumulator, element) {
@@ -130,17 +134,19 @@ function prepareGraphData(sessions, nDays) {
 
         //convert duration from milliseconds to minutes
         let _y = Math.round((duration / 1000) / 60);
-        data.xdata.push(date);
         data.ydata.push(_y);
     }
-
+    if (nDays !== 1) {
+        data.xdata.reverse();
+        data.ydata.reverse();
+    }
     return data;
 }
 
 /* 
     Update the subtitle based on active view and number of days. 
 */
-function updateSubtitle(data, nDays) {
+async function updateSubtitle(data, nDays) {
     let tot = data.ydata.reduce((accumulator, entry) => accumulator + entry, 0);
     let average = Math.round(tot / nDays);
     let msg = "";
@@ -155,19 +161,9 @@ function updateSubtitle(data, nDays) {
 }
 
 /* 
-    Update chart based on the selected active view
-*/
-function updateChart(data, nDays) {
-    _chart.data.datasets[0].data = data.ydata;
-    _chart.data.labels = data.xdata;
-    _chart.options = getChartOptions(nDays);
-    _chart.update();
-}
-
-/* 
     Handle active view change
 */
-function onChartSettingsChanged(e) {
+async function onChartSettingsChanged(e) {
     let nDays = 7;
     switch (e.srcElement.id) {
         case "view-day":
@@ -181,7 +177,9 @@ function onChartSettingsChanged(e) {
             break;
     }
 
-    let data = prepareGraphData(_host.sessions, nDays);
+    let data = await prepareGraphData(_host.sessions, nDays);
+    //document.getElementById("chartContainer").innerHTML = '<canvas id="cchart"></canvas>';
+    //await initChart(data, nDays); 
     updateChart(data, nDays);
     updateSubtitle(data, nDays);
     updateChartSubtitle(nDays);
@@ -190,7 +188,7 @@ function onChartSettingsChanged(e) {
 /* 
     High light the button corresponding to the active nDays
 */
-function updateChartSubtitle(nDays){
+async function updateChartSubtitle(nDays){
     let _cp = document.getElementById("chartPeriod").getElementsByClassName("btn-link");
     
     for (let index = 0; index < _cp.length; index++) {
@@ -220,14 +218,13 @@ function updateChartSubtitle(nDays){
     Init chart
 */
 async function initChart(data, nDays) {
-    console.log(data);
     let UICanvasChartContext = UICanvasChart.getContext('2d');
     _chart = new Chart(UICanvasChartContext, {
         type: 'bar',
         data: {
             "labels": data.xdata,
             "datasets": [{
-                "label": "data1",
+                "label": "",
                 "data": data.ydata,
                 "borderWidth": 0,
                 "backgroundColor": function (context) {
@@ -240,9 +237,19 @@ async function initChart(data, nDays) {
                     return color;
                 },
             }]
-        },
-        options: getChartOptions(nDays)
+        }, 
+        options : getChartOptions(nDays)
     });
+}
+
+/* 
+    Update chart based on the selected active view
+*/
+async function updateChart(data, nDays) {
+    _chart.data.datasets[0].data = data.ydata;
+    _chart.data.labels = data.xdata;
+    _chart.options = getChartOptions(nDays);
+    _chart.update();
 }
 
 /* 
@@ -290,7 +297,7 @@ async function init(tabs) {
     UITitle.textContent = "Time on " + _hostname;
     _host = await activity.get({ hostname: _hostname });
 
-    let data = prepareGraphData(_host.sessions, _settings.chart.nDays);
+    let data = await prepareGraphData(_host.sessions, _settings.chart.nDays);
 
     initChart(data, _settings.chart.nDays);
     updateSubtitle(data, _settings.chart.nDays);

@@ -1,7 +1,7 @@
 import * as settings from '../component/settings.js';
 import * as tracker from '../component/tracker.js';
 import { parseHostname } from '../component/util.js';
-import { add, clearOldEntries } from '../component/activity.js';
+import { add, clearEntries } from '../component/activity.js';
 import * as alarm from '../component/alarm.js';
 
 // Minimum idle time in milliseconds to trigger user interactivity
@@ -30,9 +30,16 @@ async function init() {
   _settings = await settings.get();
 
   //Clear old entries
-  var threshold = new Date(); 
+  var threshold = new Date();
   threshold.setDate(threshold.getDate() - _settings.track.duration);
-  clearOldEntries(threshold);
+  clearEntries(threshold);
+
+  /* 
+    For test only. clear newer entries.
+  */
+  //threshold = new Date();
+  //threshold.setHours(0,0,0);
+  //clearEntries(threshold, false);
 
   // Write cache to storage periodically in case of browser or OS crash
   var intervalID = setInterval(writeCacheToStorage, 15 * 60000);
@@ -67,19 +74,18 @@ async function onUserInteraction() {
       hostSettings = filteredHostSettings[0];
     }
 
-    // Init alarms when it's a new session
-    if (hostSettings && hostSettings.limits.length) {
-      console.log("Setting alarms");
-      alarm.clear(hostname);
-      alarm.set(hostname);
-    }
-
     if (sessionMatch.length === 0) {
       console.log("Session started: " + hostname);
       _sessionCache.push({
         hostname: hostname,
         created: new Date()
       });
+
+      // Init alarms when it's a new session
+      if (hostSettings && hostSettings.limits.length) {
+        alarm.clear(hostname);
+        alarm.set(hostname);
+      }
     }
   };
 
@@ -126,11 +132,16 @@ async function OnWindowFocusChanged(windowId) {
   _idleTimeout = setTimeout(onUserInteraction, minIdleTime);
 }
 
-function handleMessage(message) {
+async function handleMessage(message) {
+  console.log(message);
   switch (message.id) {
     case 'WRITE_CACHE_TO_STORAGE':
-      writeCacheToStorage();
-      break; 
+      await writeCacheToStorage();
+      break;
+    case 'RESET_ALARM_FOR_HOSTNAME':
+      await alarm.clear(message.data);
+      await alarm.set(message.data);
+      break;
     default:
       throw new Error(`Message id "${message.id}" is not implementd.`)
       break;
@@ -150,5 +161,9 @@ async function writeCacheToStorage() {
     _sessionCache[i].created = new Date();
   }
 }
+
+browser.runtime.onSuspend.addListener(function () {
+  console.log("Unloading.");
+});
 
 init();
