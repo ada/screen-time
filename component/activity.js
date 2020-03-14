@@ -1,5 +1,4 @@
-import { isEmptyObject } from "./util.js";
-
+import { isEmptyObject, isSameDay, isSameHour } from "./util.js";
 /* 
     Set activities
 */
@@ -94,4 +93,53 @@ export async function clearEntries(threshold, pre = true){
     }
 
     await set(sessions);
+}
+
+
+/* 
+    Get daily usage in minutes for a hostname between two dates
+*/
+export async function getDailyUsage(sessions, start, end, format) {
+    let data = { x: [], y: [] };
+    let loop = start;
+    for (let i = start; i <= end; i.setDate(i.getDate() + 1)) {
+        let duration = sessions.reduce(function (accumulator, element) {
+            let created = new Date(element.created);
+            if (isSameDay(created, i)) {
+                return accumulator + element.duration;
+            }
+            return accumulator;
+        }, 0);
+
+        let x = moment(i).format(format);
+        let y = Math.round((duration / 1000) / 60);
+
+        data.y.push(y);
+        data.x.push(x);
+    }
+    return data;
+}
+
+/* 
+    Get hourly usage between two dates. (usually the same day)
+*/
+export async function getHourlyUsage(sessions, start, end, format){
+    let data = { x: [], y: [] };
+    let loop = start;
+    for (let i = start; i <= end; i.setHours(i.getHours() + 1)) {
+        let duration = sessions.reduce(function (accumulator, element) {
+            let created = new Date(element.created);
+            if (isSameDay(created, i) && isSameHour(created, i)) {
+                return accumulator + element.duration;
+            }
+            return accumulator;
+        }, 0);
+
+        let x = moment(i).format(format);
+        let y = Math.round((duration / 1000) / 60);
+
+        data.y.push(y);
+        data.x.push(x);
+    }
+    return data;
 }
