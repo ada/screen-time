@@ -4,12 +4,6 @@ import * as activity from '../component/activity.js';
 import { get as getChartOptions } from '../component/chartOptions.js';
 import { parseHostname } from '../component/util.js';
 
-let app = angular.module('webTime', []); 
-
-app.controller('popupController', function($scope) {
-    $scope.test = "Hello";
-
-
 // Current hostname string
 let _hostname;
 
@@ -330,12 +324,11 @@ async function init(tabs) {
         }
     }
 
-    //UITitle.textContent = "Time on " + _hostname;
-    $scope.title = "Time on " + _hostname;
+    UITitle.textContent = "Time on " + _hostname;
     _host = await activity.get({ hostname: _hostname });
     await initHostSettings();
 
-    $scope.$apply();
+    
     let data = await prepareGraphData(_host.sessions);
     await initChart(data);
     await updateSubtitle(data);
@@ -351,5 +344,3 @@ browser.runtime.sendMessage({ id: "WRITE_CACHE_TO_STORAGE", hostname: _hostname 
     Retrieve the active tab where the popup is shown
 */
 browser.tabs.query({ active: true, currentWindow: true }).then(init);
-
-});

@@ -1,26 +1,26 @@
 <!DOCTYPE html>
-<html ng-app="webTime">
+
+<html>
 
 <head>
   <meta charset="utf-8">
   <link rel="stylesheet" href="../theme.css" />
 </head>
 
-<body id="popup" ng-controller="popupController">
-
-  <section id="serror" ng-show="error">
+<body id="popup">
+  <section id="serror" hidden>
     <h5 id="errorTitle">Error</h5>
     <p id="errorSubtitle">Could not fetch data.</p>
   </section>
-
+<div id="console"></div>
   <section id="schart">
-    <h3 id="title" ng-bind="title"></h3>
+    <h3 id="title"></h3>
     <p id="subtitle"></p>
-
+    
     <div id="chartContainer">
       <canvas id="cchart"></canvas>
     </div>
-
+    
     <div class="btn-group" id="chartPeriod">
       <div><button type="button" class="btn btn-link" id="view-day">Today</button></div>
       <div><button type="button" class="btn btn-link" id="view-week">Week</button></div>
@@ -68,7 +68,7 @@
     <p><button type="button" id="disableTracking">Disable tracking</button></p>
   </section>
 
-  <script type="module" src="../lib/angular.min.js"></script>
+
   <script type="module" src="../lib/browser-polyfill.js"></script>
   <script src="../lib/moment-with-locales.min.js"></script>
   <script src="../lib/chart.js"></script>
