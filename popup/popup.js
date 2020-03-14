@@ -12,7 +12,7 @@ let _host;
 
 // Chart object
 let _chart;
-let _nDays; 
+let _nDays;
 
 // Local copy of the global settings
 let _settings;
@@ -114,30 +114,35 @@ async function prepareGraphData(sessions) {
     var start = new Date();
 
     if (_nDays === 1) {
-        start.setHours(0,0,0,0); 
-        end.setHours(23,59,59,999); 
-        let format = "H";
-        let hourlyUsage = await activity.getHourlyUsage(sessions, start, end, format); 
-        data.y = hourlyUsage.y; 
-        data.x = hourlyUsage.x; 
+        start.setHours(0, 0, 0, 0);
+        end.setHours(23, 59, 59, 999);
 
-        start.setDate(start.getDate() - 1);
-        end.setDate(start.getDate() - 1);
+        let format = "H";
+        let hourlyUsage = await activity.getHourlyUsage(sessions, start, end, format);
+        data.y = hourlyUsage.y;
+        data.x = hourlyUsage.x;
+        
+        start.setDate(start.getDate() - 2);
+        end.setDate(end.getDate() - 1);
         let dailyUsagePast = await activity.getHourlyUsage(sessions, start, end, format);
-        data.yCompare = dailyUsagePast.y; 
+        data.yCompare = dailyUsagePast.y;
     } else {
         start.setDate(start.getDate() - _nDays);
+        start.setHours(0,0,0,0);
+        
         let format = _nDays < 14 ? "ddd" : "D";
         let dailyusage = await activity.getDailyUsage(sessions, start, end, format);
         data.y = dailyusage.y;
         data.x = dailyusage.x;
 
-        start.setDate(start.getDate() - _nDays * 2);
-        end.setDate(start.getDate() - _nDays);
+        start.setDate(start.getDate() - _nDays - 1 );
+        end.setDate(end.getDate() - _nDays * 2 );
+        console.log(start);
+        console.log(end);
         let dailyUsagePast = await activity.getDailyUsage(sessions, start, end, format);
-        data.yCompare = dailyUsagePast.y; 
+        data.yCompare = dailyUsagePast.y;
     }
-    
+
     data.yLimit = Array.from({ length: data.x.length }, (v, i) => UIRangeAlarm.value);
     return data;
 }
@@ -175,7 +180,7 @@ async function onChartSettingsChanged(e) {
             break;
     }
     updateChart();
-    
+
 }
 
 /* 
@@ -213,10 +218,11 @@ async function updateChartSubtitle() {
 */
 async function initChart(data, nDays) {
     let datasets = [{
-        "label": "Web time",
-        "data": data.y,
-        "borderWidth": 0,
-        "backgroundColor": function (context) {
+        label: "Web time",
+        order: 1,
+        data: data.y,
+        borderWidth: 0,
+        backgroundColor: function (context) {
             var index = context.dataIndex;
             var value = context.dataset.data[index];
             var min = Math.min(...context.dataset.data);
@@ -227,41 +233,36 @@ async function initChart(data, nDays) {
         },
     }];
 
-    if (true) {
-        datasets.push({
-            label: "Limit",
-            data: data.yLimit,
-            type: 'line',
-            backgroundColor: 'rgba(255, 0, 0, 0.3)',
-            order: 1,
-            borderColor: 'rgba(255, 0, 0, 0.3)',
-            borderDash: [6],
-            borderWidth: 1,
-            fill: false,
-            radius: 0,
-        });
-    }
+    datasets.push({
+        label: "Limit",
+        data: data.yLimit,
+        type: 'line',
+        backgroundColor: 'rgba(255, 0, 0, 0.3)',
+        order: 2,
+        borderColor: 'rgba(255, 0, 0, 0.3)',
+        borderDash: [6],
+        borderWidth: 1,
+        fill: false,
+        radius: 0,
+    });
 
-    if(true){
-        datasets.push({
-            label: "Compare",
-            data: data.yCompare,
-            type: 'line',
-            order: 3,
-            borderColor: 'rgba(0, 0, 0, 0.3)',
-            borderDash: [6],
-            borderWidth: 1,
-            fill: false,
-            radius: 0,
-        });
-    }
+    datasets.push({
+        label: "Compare",
+        data: data.yCompare,
+        type: 'line',
+        order: 0,
+        borderColor: 'rgba(0, 0, 0, 0.3)',
+        borderWidth: 1,
+        fill: false,
+        radius: 0,
+    });
 
     let UICanvasChartContext = UICanvasChart.getContext('2d');
     _chart = new Chart(UICanvasChartContext, {
         type: 'bar',
         data: {
-            "labels": data.x,
-            "datasets": datasets
+            labels: data.x,
+            datasets: datasets
         },
         options: getChartOptions(nDays)
     });
@@ -271,7 +272,7 @@ async function initChart(data, nDays) {
     Update chart based on the selected active view
 */
 async function updateChart() {
-    let data = await prepareGraphData(_host.sessions, _nDays);
+    let data = await prepareGraphData(_host.sessions);
     _chart.data.datasets[0].data = data.y;
     _chart.data.datasets[1].data = data.yLimit;
     _chart.data.datasets[2].data = data.yCompare;
@@ -291,7 +292,6 @@ async function initHostSettings() {
         if (_settings.hosts[i].limits.length > 0) {
             UIRangeAlarm.value = _settings.hosts[i].limits[0].threshold / 1000 / 60;
             UICheckboxBlockAfter.checked = _settings.hosts[i].limits[0].blockAfter;
-
         } else {
             UIRangeAlarm.value = 0;
             UICheckboxBlockAfter.checked = false;
@@ -307,7 +307,7 @@ async function initHostSettings() {
 */
 async function init(tabs) {
     _settings = await settings.get();
-    _nDays = _settings.chart.nDays; 
+    _nDays = _settings.chart.nDays;
     _hostname = parseHostname(tabs[0].url);
 
     if (_hostname.length === 0 || _hostname.indexOf(".") === -1)
@@ -328,7 +328,7 @@ async function init(tabs) {
     _host = await activity.get({ hostname: _hostname });
     await initHostSettings();
 
-    
+
     let data = await prepareGraphData(_host.sessions);
     await initChart(data);
     await updateSubtitle(data);

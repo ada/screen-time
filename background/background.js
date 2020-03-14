@@ -133,7 +133,7 @@ async function OnWindowFocusChanged(windowId) {
 }
 
 async function handleMessage(message) {
-  console.log(message);
+  //console.log(message);
   switch (message.id) {
     case 'WRITE_CACHE_TO_STORAGE':
       await writeCacheToStorage();

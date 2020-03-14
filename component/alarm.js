@@ -31,7 +31,7 @@ export async function clear(hostname) {
         alarms.splice(alarms.indexOf(a), 1);
     }
 
-    print();
+    //print();
 }
 
 /* 
@@ -78,8 +78,7 @@ export async function set(hostname) {
                 var timeLeft = limitation.threshold - currentUsage;
                 console.log(`current usage: ${currentUsage / 1000 / 60} minutes`);
                 console.log(`time left: ${timeLeft / 1000 / 60} minutes`);
-                console.log(`Setting an alarm for ${timeLeft / 1000} seconds.`);
-
+                
                 if (limitation.blockAfter === true) {
                     var wt = timeLeft - 60000 <= 0 ? 50 : timeLeft - 60000;
                     var t = setTimeout(sessionExpirationWarning, wt, {
@@ -105,7 +104,7 @@ export async function set(hostname) {
         }
     });
 
-    print();
+    //print();
 }
 
 /* 
