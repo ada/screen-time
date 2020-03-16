@@ -16,6 +16,9 @@ let _settings;
 // Temporary cache storage for sessions
 let _sessionCache = [];
 
+// Last time a user interacted with the browser
+let _lastUserInteractionTime;
+
 // Register listeners
 browser.tabs.onUpdated.addListener(OnTabUpdated);
 browser.tabs.onActivated.addListener(OnTabActivated);
@@ -45,19 +48,35 @@ async function init() {
   var intervalID = setInterval(writeCacheToStorage, 15 * 60000);
 
   // Write cache to storage at midnight
-  let now = new Date();
-  let midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
-  let msTillMidnight = midnight.getTime() - now.getTime(); // difference in milliseconds
-  let midnightTimeout = setTimeout(writeCacheToStorage, msTillMidnight);
-  //console.log(`Midnight task in ${msTillMidnight/1000} seconds.`);
+  await midnightTask();
+
+  // Detect if user is idle every minute
+  setInterval(detectIdleUser, 60000);
+  setInterval(updateBadgeText, 5000);
+}
+
+/* 
+  Update badge text
+*/
+async function updateBadgeText(){
+  let activeTabs = await browser.tabs.query({ active: true });
+  await initializeNewSessions(activeTabs);
 }
 
 /*
   Acquire active tabs and process them on user interaction
 */
 async function onUserInteraction() {
+  _lastUserInteractionTime = new Date();
   let activeTabs = await browser.tabs.query({ active: true });
+  await initializeNewSessions(activeTabs);
+  await finalizeDeadSessions(activeTabs);
+}
 
+/* 
+  Initialize new sessions
+*/
+async function initializeNewSessions(activeTabs){
   for (let i = 0; i < activeTabs.length; i++) {
     let hostname = parseHostname(activeTabs[i].url);
 
@@ -75,21 +94,34 @@ async function onUserInteraction() {
     }
 
     if (sessionMatch.length === 0) {
+      browser.browserAction.setBadgeText({ text: "", tabId: activeTabs[i].id });
+      
       console.log("Session started: " + hostname);
       _sessionCache.push({
         hostname: hostname,
         created: new Date()
       });
-
       // Init alarms when it's a new session
       if (hostSettings && hostSettings.limits.length) {
         alarm.clear(hostname);
-        alarm.set(hostname);
+        let timeleft = alarm.set(hostname, activeTabs[i].tabId);
       }
+    } else {
+      let now = new Date();
+      let sessionCreationTime = new Date(sessionMatch[0].created);
+      let badge = ((now - sessionCreationTime) / 1000) / 60;
+      var multiplier = Math.pow(10, 1 || 0);
+      badge = Math.round(badge * multiplier) / multiplier;
+      browser.browserAction.setBadgeText({ text: "" + badge, tabId: activeTabs[i].id });
+      console.log("Usage: " + badge + " tabId: " + activeTabs[i].id)
     }
   };
+}
 
-  // Finalize dead sessions
+/* 
+  Finalize dead sessions
+*/
+async function finalizeDeadSessions(activeTabs){
   for (let i = 0; i < _sessionCache.length; i++) {
     const session = _sessionCache[i];
     let sessionMatch = activeTabs.filter(element => parseHostname(element.url) === session.hostname);
@@ -104,7 +136,6 @@ async function onUserInteraction() {
     }
   };
 }
-
 
 /* 
   Trigger user interaction when tab gets activated
@@ -152,18 +183,54 @@ async function handleMessage(message) {
   Write all cache entries to local storage and reset creation date. 
   This is useful when clocks changes from 23:59:59 to 00:00:00 thus seperating dates.
 */
-async function writeCacheToStorage() {
+async function writeCacheToStorage(flush = false) {
   for (let i = 0; i < _sessionCache.length; i++) {
     const session = _sessionCache[i];
     const duration = Math.round((new Date() - session.created));
     //console.log("Session written to storage: " + session.hostname, duration);
     await add(session.hostname, session.created.toJSON(), duration);
-    _sessionCache[i].created = new Date();
+
+    if (flush === true) {
+      _sessionCache.splice(i, 1);
+    } else {
+      _sessionCache[i].created = new Date();
+    }
   }
 }
 
+/* 
+  Flush cache to storage if use has been inactive
+*/
+async function detectIdleUser() {
+  var now = new Date();
+  if (now - _lastUserInteractionTime > 60 * 1000) {
+    console.log("User is idle. Flushing cache...");
+    await writeCacheToStorage(true);
+  } else {
+    console.log("user is active.")
+  }
+}
+
+/* 
+  Task to run at midnight to create new sessions for the new day
+*/
+async function midnightTask() {
+  await writeCacheToStorage();
+  // Write cache to storage at midnight
+  let now = new Date();
+  let midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
+  let msTillMidnight = midnight.getTime() - now.getTime(); // difference in milliseconds
+  let midnightTimeout = setTimeout(midnightTask, msTillMidnight);
+  console.log(`Midnight task will run in ${msTillMidnight / 1000 / 60} minutes.`);
+}
+
+/* 
+  On browser suspend
+*/
 browser.runtime.onSuspend.addListener(function () {
   console.log("Unloading.");
+  writeCacheToStorage(true);
 });
+
 
 init();

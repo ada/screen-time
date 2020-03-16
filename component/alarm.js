@@ -9,7 +9,7 @@ var UID_PREFIX_REMINDER = "reminder_";
 /* 
     Print all alarms
 */
-export async function print(){
+export async function print() {
     console.log(alarms);
 }
 
@@ -21,7 +21,7 @@ export async function clear(hostname) {
         throw new Error("Hostname is undefined.");
     }
 
-    ClearNotificationWithUID(UID_PREFIX_EXPIRED + hostname); 
+    ClearNotificationWithUID(UID_PREFIX_EXPIRED + hostname);
     ClearNotificationWithUID(UID_PREFIX_REMINDER + hostname);
 
     var filteredAlarms = alarms.filter(alarm => alarm.hostname === hostname);
@@ -37,14 +37,15 @@ export async function clear(hostname) {
 /* 
     Create alarms for the given hostname
 */
-export async function set(hostname) {
+export async function set(hostname, tabId) {
+    var timeLeft = -1;
     if (hostname === undefined) {
         throw new Error("Hostname is undefined.");
     }
 
     let _settings = await settings.get();
     let hostSettings = _settings.hosts.filter(element => element.hostname === hostname)[0];
-    
+
     if (!hostSettings || hostSettings === undefined) {
         return;
     }
@@ -75,7 +76,7 @@ export async function set(hostname) {
                     blockAfter: limitation.blockAfter
                 });
             } else {
-                var timeLeft = limitation.threshold - currentUsage;
+                timeLeft = limitation.threshold - currentUsage;
                 console.log(`current usage: ${currentUsage / 1000 / 60} minutes`);
                 console.log(`time left: ${timeLeft / 1000 / 60} minutes`);
                 
@@ -104,6 +105,7 @@ export async function set(hostname) {
         }
     });
 
+    return timeLeft;
     //print();
 }
 
