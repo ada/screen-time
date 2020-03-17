@@ -127,7 +127,7 @@ async function prepareGraphData(sessions) {
         let dailyUsagePast = await activity.getHourlyUsage(sessions, start, end, format);
         data.yCompare = dailyUsagePast.y;
     } else {
-        start.setDate(start.getDate() - _nDays);
+        start.setDate(start.getDate() - _nDays + 1);
         start.setHours(0,0,0,0);
         
         let format = _nDays < 14 ? "ddd" : "D";
@@ -135,7 +135,7 @@ async function prepareGraphData(sessions) {
         data.y = dailyusage.y;
         data.x = dailyusage.x;
 
-        start.setDate(start.getDate() - _nDays - 1 );
+        start.setDate(start.getDate() - _nDays + 1);
         end.setDate(end.getDate() - _nDays * 2 );
         console.log(start);
         console.log(end);

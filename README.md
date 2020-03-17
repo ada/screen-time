@@ -34,7 +34,7 @@ To be able to collect data from any visited hostname, this permission is require
 Web Time stores some data about where you've visited recently. Specifically, the hostname, visitation date/time and the duration of the visit. You can always clear this data from the Extension Options page. Note that the exact URLs of the visited pages are not stored. 
 
 ## License
-Please refer to the file named "LICENSE"
+Please refer to the file named "LICENSE".
 
 ## Contact 
 Please use Github to report/ask or discuss this web extension's features, questions about the privacy policy or other matters. 
