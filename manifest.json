@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
   "name": "Web Time",
-  "version": "1.1",
-  "description": "Measue browsing time and set daily time limits.",
+  "version": "1.2",
+  "description": "Measure browsing time and set daily time limits.",
   "homepage_url": "https://github.com/ada/web-time",
   "icons": {
     "48": "./icons/font-awesome_4-7-0_hourglass-half_48.png"
