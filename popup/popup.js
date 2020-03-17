@@ -121,22 +121,22 @@ async function prepareGraphData(sessions) {
         let hourlyUsage = await activity.getHourlyUsage(sessions, start, end, format);
         data.y = hourlyUsage.y;
         data.x = hourlyUsage.x;
-        
+
         start.setDate(start.getDate() - 2);
         end.setDate(end.getDate() - 1);
         let dailyUsagePast = await activity.getHourlyUsage(sessions, start, end, format);
         data.yCompare = dailyUsagePast.y;
     } else {
         start.setDate(start.getDate() - _nDays + 1);
-        start.setHours(0,0,0,0);
-        
+        start.setHours(0, 0, 0, 0);
+
         let format = _nDays < 14 ? "ddd" : "D";
         let dailyusage = await activity.getDailyUsage(sessions, start, end, format);
         data.y = dailyusage.y;
         data.x = dailyusage.x;
 
-        start.setDate(start.getDate() - _nDays + 1);
-        end.setDate(end.getDate() - _nDays * 2 );
+        start.setDate(start.getDate() - _nDays * 2);
+        end.setDate(end.getDate() - _nDays );
         console.log(start);
         console.log(end);
         let dailyUsagePast = await activity.getDailyUsage(sessions, start, end, format);
@@ -219,7 +219,7 @@ async function updateChartSubtitle() {
 async function initChart(data, nDays) {
     let datasets = [{
         label: "Web time",
-        order: 1,
+        order: 0,
         data: data.y,
         borderWidth: 0,
         backgroundColor: function (context) {
@@ -230,32 +230,30 @@ async function initChart(data, nDays) {
             var opacity = value / max + 0.1;
             var color = "rgba(65, 131, 196, " + opacity.toString() + ")";
             return color;
-        },
-    }];
-
-    datasets.push({
+        }
+    },
+    {
         label: "Limit",
         data: data.yLimit,
         type: 'line',
         backgroundColor: 'rgba(255, 0, 0, 0.3)',
-        order: 2,
+        order: 1,
         borderColor: 'rgba(255, 0, 0, 0.3)',
         borderDash: [6],
         borderWidth: 1,
         fill: false,
         radius: 0,
-    });
-
-    datasets.push({
+    },
+    {
         label: "Compare",
         data: data.yCompare,
         type: 'line',
-        order: 0,
+        order: 2,
         borderColor: 'rgba(0, 0, 0, 0.3)',
         borderWidth: 1,
         fill: false,
         radius: 0,
-    });
+    }];
 
     let UICanvasChartContext = UICanvasChart.getContext('2d');
     _chart = new Chart(UICanvasChartContext, {
