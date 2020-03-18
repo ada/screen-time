@@ -13,6 +13,7 @@ let _host;
 // Chart object
 let _chart;
 let _nDays;
+let _isTracked;
 
 // Local copy of the global settings
 let _settings;
@@ -23,7 +24,6 @@ let _sessionCache = {};
 // UI references
 let UIRangeAlarm = document.getElementById("alarm");
 let UIRangeAlarmLabel = document.getElementById("alarmLabel");
-let UICheckboxBlockAfter = document.getElementById("blockAfter");
 let UIButtonViewDay = document.getElementById("view-day");
 let UIButtonViewWeek = document.getElementById("view-week");
 let UIButtonViewMonth = document.getElementById("view-month");
@@ -32,18 +32,32 @@ let UITitle = document.getElementById("title");
 let UISubtitle = document.getElementById("subtitle");
 let UIButtonEnableTracking = document.getElementById("enableTracking");
 let UIButtonDisableTracking = document.getElementById("disableTracking");
+let UIButtonViewChart = document.getElementById("view-chart");
+let UIButtonViewAlarm = document.getElementById("view-alarm");
+let UIButtonViewOptions = document.getElementById("view-options");
+let UIButtonViewSettings = document.getElementById("view-settings");
 
 /* 
     Initialize event listeners
 */
 UIRangeAlarm.addEventListener("change", onAlarmSettingsChanged);
 UIRangeAlarm.addEventListener("input", updateAlarmLabel);
-UICheckboxBlockAfter.addEventListener("change", onAlarmSettingsChanged);
 UIButtonViewDay.addEventListener("click", onChartSettingsChanged);
 UIButtonViewWeek.addEventListener("click", onChartSettingsChanged);
 UIButtonViewMonth.addEventListener("click", onChartSettingsChanged);
 UIButtonEnableTracking.addEventListener("click", track, true);
 UIButtonDisableTracking.addEventListener("click", untrack, false);
+UIButtonViewChart.addEventListener("click", onTabNavigation);
+UIButtonViewAlarm.addEventListener("click", onTabNavigation);
+UIButtonViewOptions.addEventListener("click", onTabNavigation);
+UIButtonViewSettings.addEventListener("click", openSettings);
+
+/* 
+    Open global extensions options
+*/
+async function openSettings(e) {
+    browser.runtime.openOptionsPage();
+}
 
 /* 
     Add current hostname to the tracking list
@@ -68,13 +82,11 @@ async function untrack(track) {
 */
 async function onAlarmSettingsChanged() {
     let i = _settings.hosts.findIndex(element => element.hostname === _hostname);
-    let limitArray = [
-        {
+    let limitArray = [{
             period: "day",
             threshold: UIRangeAlarm.value * 60 * 1000,
-            blockAfter: UICheckboxBlockAfter.checked
-        }
-    ];
+            blockAfter: false
+        }];
 
     if (UIRangeAlarm.value === 0) {
         limitArray = [];
@@ -96,12 +108,12 @@ async function onAlarmSettingsChanged() {
     browser.runtime.sendMessage({ id: "RESET_ALARM_FOR_HOSTNAME", hostname: _hostname });
 }
 
+
 /* 
    Update Alarm range slider label
 */
 async function updateAlarmLabel() {
-    let minutes = UIRangeAlarm.value;
-    UIRangeAlarmLabel.innerHTML = minutes == 0 ? "set below." : "of <strong>" + minutes + " minutes</strong>.";
+    UIRangeAlarmLabel.innerHTML = UIRangeAlarm.value > 0 ? UIRangeAlarm.value + " minutes" : "";
     updateChart();
 }
 
@@ -136,7 +148,7 @@ async function prepareGraphData(sessions) {
         data.x = dailyusage.x;
 
         start.setDate(start.getDate() - _nDays * 2);
-        end.setDate(end.getDate() - _nDays );
+        end.setDate(end.getDate() - _nDays);
         console.log(start);
         console.log(end);
         let dailyUsagePast = await activity.getDailyUsage(sessions, start, end, format);
@@ -179,20 +191,42 @@ async function onChartSettingsChanged(e) {
             _nDays = 7;
             break;
     }
-    updateChart();
 
+    updateChart();
 }
+
+async function onTabNavigation(e) {
+
+    let tabcontent = document.getElementsByClassName("tabContent");
+
+    for (let i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+    }
+
+    let tabItems = document.getElementsByClassName("tab-link");
+
+    for (let i = 0; i < tabItems.length; i++) {
+        const element = tabItems[i];
+        element.disabled = false;
+        element.classList.remove("btn-active");
+    }
+
+    let targetId = e.srcElement.id.replace("view-", "") + "View";
+    document.getElementById(targetId).style.display = "block";
+    e.currentTarget.className += " btn-active";
+}
+
 
 /* 
     High light the button corresponding to the active nDays
 */
 async function updateChartSubtitle() {
-    let _cp = document.getElementById("chartPeriod").getElementsByClassName("btn-link");
+    let _cp = document.getElementById("chartViewOptions").getElementsByClassName("btn-link");
 
     for (let index = 0; index < _cp.length; index++) {
         const element = _cp[index];
         element.disabled = false;
-        element.classList.remove("btn-disabled");
+        element.classList.remove("btn-active");
     }
 
     let selectedId = "view-week";
@@ -209,7 +243,7 @@ async function updateChartSubtitle() {
     }
 
     let _curr = document.getElementById(selectedId);
-    _curr.classList.add("btn-disabled");
+    _curr.classList.add("btn-active");
     _curr.disabled = true;
 }
 
@@ -228,7 +262,7 @@ async function initChart(data, nDays) {
             var min = Math.min(...context.dataset.data);
             var max = Math.max(...context.dataset.data);
             var opacity = value / max + 0.1;
-            var color = "rgba(65, 131, 196, " + opacity.toString() + ")";
+            var color = "rgba(32, 165, 250, " + opacity.toString() + ")";
             return color;
         }
     },
@@ -249,9 +283,10 @@ async function initChart(data, nDays) {
         data: data.yCompare,
         type: 'line',
         order: 2,
-        borderColor: 'rgba(0, 0, 0, 0.3)',
+        borderColor: 'rgba(233, 241, 246, 1)',
         borderWidth: 1,
-        fill: false,
+        backgroundColor: 'rgba(233, 241, 246, 1)',
+        fill: true,
         radius: 0,
     }];
 
@@ -289,12 +324,9 @@ async function initHostSettings() {
     if (i > -1) {
         if (_settings.hosts[i].limits.length > 0) {
             UIRangeAlarm.value = _settings.hosts[i].limits[0].threshold / 1000 / 60;
-            UICheckboxBlockAfter.checked = _settings.hosts[i].limits[0].blockAfter;
         } else {
             UIRangeAlarm.value = 0;
-            UICheckboxBlockAfter.checked = false;
         }
-
         updateAlarmLabel();
     }
 }
@@ -308,29 +340,40 @@ async function init(tabs) {
     _nDays = _settings.chart.nDays;
     _hostname = parseHostname(tabs[0].url);
 
-    if (_hostname.length === 0 || _hostname.indexOf(".") === -1)
+    if (_hostname.length === 0 || _hostname.indexOf(".") === -1) {
         window.close();
-
-    if (await tracker.isTracked(_hostname) === false) {
-        document.getElementById("schart").hidden = true;
-        document.getElementById("stime").hidden = true;
-        document.getElementById("strack").hidden = false;
-        return;
-    } else {
-        if (_settings.track.all === false) {
-            document.getElementById("suntrack").hidden = false;
-        }
     }
 
-    UITitle.textContent = "Time on " + _hostname;
-    _host = await activity.get({ hostname: _hostname });
-    await initHostSettings();
+    _isTracked = await tracker.isTracked(_hostname);
 
+    if (_isTracked) {
+        UIButtonViewChart.click();
+        UITitle.textContent = "Time on " + _hostname;
+        _host = await activity.get({ hostname: _hostname });
+        let data = await prepareGraphData(_host.sessions);
+        await initHostSettings();
+        await initChart(data);
+        await updateSubtitle(data);
+        await updateChartSubtitle();
 
-    let data = await prepareGraphData(_host.sessions);
-    await initChart(data);
-    await updateSubtitle(data);
-    await updateChartSubtitle();
+        if(_settings.track.all === true){
+            var element = document.getElementById("view-options"); 
+            element.parentElement.removeChild(element);
+        } else{
+            var element = document.getElementById("enableTracking"); 
+            element.parentElement.removeChild(element);
+        }
+
+    } else {
+        UIButtonViewOptions.click();
+        var elementsToRemove = ["disableTracking", "view-chart", "view-alarm"]; 
+        
+        for (let i = 0; i < elementsToRemove.length; i++) {
+            const elementId = elementsToRemove[i];
+            var element = document.getElementById(elementId); 
+            element.parentElement.removeChild(element);
+        }
+    }
 }
 
 /* 
