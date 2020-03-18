@@ -1,14 +1,15 @@
 <!DOCTYPE html>
 
 <html>
-  <head>
-    <meta charset="utf-8">
-    <link rel="stylesheet" href="../theme.css"/>
-    <script type="module" src="../lib/browser-polyfill.js"></script>
-    <script type="module" src="options.js"></script>
-  </head>
 
-<body> 
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="../theme.css" />
+  <script type="module" src="../lib/browser-polyfill.js"></script>
+  <script type="module" src="options.js"></script>
+</head>
+
+<body>
   <form>
     <section>
       <h3>Tracking</h3>
@@ -18,27 +19,33 @@
       </p>
 
       <p>
+        <input type="checkbox" id="blockAfter" name="blockAfter" value="false" title="Access">
+        <label for="blockAfter">Block access after reaching the daily time limit</label>
+      </p>
+
+      <p>
         <table width="100%">
           <tr>
             <td width="75%">
-              <label for="trackingDuration">Periodically remove data older than <span id="trackingDurationLabel"></span> days.</label>
+              <label for="trackingDuration">Periodically remove data older than <span id="trackingDurationLabel"></span>
+                days.</label>
             </td>
-          <td style="text-align: right;"> 
-            <input type="range" id="trackingDuration" name="trackingDuration" min="7" max="30" value="30" step="1" required>
-          </td>
-        </tr>
+            <td style="text-align: right;">
+              <input type="range" id="trackingDuration" name="trackingDuration" min="7" max="30" value="30" step="1" required style="width: 80px;"> 
+            </td>
+          </tr>
         </table>
-        </p>
+      </p>
     </section>
 
     <section>
       <h3>Chart</h3>
       <p></p>
-        <table width="100%">
-          <tr>
-            <td width="75%">
-              <label for="defaultChartView">Default chart view:</label>
-            </td>
+      <table width="100%">
+        <tr>
+          <td width="75%">
+            <label for="defaultChartView">Default chart view:</label>
+          </td>
           <td style="text-align: right;">
             <select name="defaultChartView" id="defaultChartView" required>
               <option value="1">Day</option>
@@ -47,41 +54,43 @@
             </select>
           </td>
         </tr>
-        </table>
+      </table>
       </p>
     </section>
 
     <section>
       <h3>Theme</h3>
       <p></p>
-        <table width="100%">
-          <tr>
-            <td width="75%">
-              <label for="theme">Default theme:</label>
-            </td>
+      <table width="100%">
+        <tr>
+          <td width="75%">
+            <label for="theme">Default theme:</label>
+          </td>
           <td style="text-align: right;">
             <select name="theme" id="theme" required>
               <option value="light">Light</option>
             </select>
           </td>
         </tr>
-        </table>
+      </table>
       </p>
     </section>
 
     <section>
       <h3>Data</h3>
-      <p>Resetting the extension settings, clears all the extension settings and reminders/rules for individual hostnames.</p>
+      <p>Resetting the extension settings, clears all the extension settings and reminders/rules for individual
+        hostnames.</p>
       <p><button id="resetSettings" type="button">Reset settings</button></p>
-      <p><button id="resetData"  type="button">Clear data</button></p>
+      <p><button id="resetData" type="button">Clear data</button></p>
     </section>
 
-    <p style="margin: 8px;"><small style="color:gray">This extension is opensource and available on <a href="https://github.com/ada/web-time" title="Repository link">github.com/ada/web-time</a>.</small></p>
-      
+    <p style="margin: 8px;"><small style="color:gray">This extension is open source and available on <a
+          href="https://github.com/ada/web-time" title="Repository link">github.com/ada/web-time</a>.</small></p>
+
   </form>
 
 
-  
+
 </body>
 
 </html>

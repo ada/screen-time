@@ -73,14 +73,14 @@ export async function set(hostname, tabId) {
             if (currentUsage >= limitation.threshold) {
                 onDailyLimitReached({
                     hostname: hostname,
-                    blockAfter: limitation.blockAfter
+                    blockAfter: _settings.blockAfter
                 });
             } else {
                 timeLeft = limitation.threshold - currentUsage;
                 console.log(`current usage: ${currentUsage / 1000 / 60} minutes`);
                 console.log(`time left: ${timeLeft / 1000 / 60} minutes`);
                 
-                if (limitation.blockAfter === true) {
+                if (_settings.blockAfter === true) {
                     var wt = timeLeft - 60000 <= 0 ? 50 : timeLeft - 60000;
                     var t = setTimeout(sessionExpirationWarning, wt, {
                         hostname: hostname,
@@ -94,7 +94,7 @@ export async function set(hostname, tabId) {
 
                 var t = setTimeout(onDailyLimitReached, timeLeft, {
                     hostname: hostname,
-                    blockAfter: limitation.blockAfter
+                    blockAfter: _settings.blockAfter
                 });
 
                 alarms.push({

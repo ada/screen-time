@@ -36,5 +36,6 @@ export const defaults = {
     },
     hosts: [], 
     accessRules : [], 
-    theme : "light"
+    theme : "light", 
+    blocketAfter : false
 }

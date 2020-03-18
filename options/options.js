@@ -12,6 +12,7 @@ let UILabelTrackingDuration = document.getElementById("trackingDurationLabel");
 let UISelectBoxTheme = document.getElementById("theme");
 let UIButtonResetSettings = document.getElementById("resetSettings"); 
 let UIButtonResetData = document.getElementById("resetData");
+let UICheckboxBlockAfter = document.getElementById("blockAfter");
 /* 
     Event listeners
 */
@@ -23,6 +24,7 @@ async function initEventListeners(){
     UISelectBoxTheme.addEventListener("change", onOptionsChanged);
     UIRangeTrackingDuration.addEventListener("change", onOptionsChanged);
     UIRangeTrackingDuration.addEventListener("input", onTrackingDurationChanged);
+    UICheckboxBlockAfter.addEventListener("change", onOptionsChanged);
 }
 
 /* 
@@ -31,6 +33,7 @@ async function initEventListeners(){
 async function init() {
     _settings = await settings.get(); 
     UICheckboxTrackAll.checked = _settings.track.all;
+    UICheckboxBlockAfter.checked = _settings.blockAfter; 
     UISelectBoxDefaultChartView.value = _settings.chart.nDays; 
     UIRangeTrackingDuration.value = _settings.track.duration; 
     UILabelTrackingDuration.textContent = _settings.track.duration;
@@ -58,6 +61,7 @@ async function resetData() {
 */
 async function onOptionsChanged(){
     _settings.track.all = UICheckboxTrackAll.checked;
+    _settings.blockAfter = UICheckboxBlockAfter.checked; 
     _settings.track.duration = Number(UIRangeTrackingDuration.value);
     _settings.chart.nDays = Number(UISelectBoxDefaultChartView.value);
     _settings.theme = UISelectBoxTheme.value === "dark" ? "dark" : "light"; 
