@@ -1,6 +1,9 @@
 # Web Time
 A browser extension to accurately (±1s) track screen time on the visited websites. 
 
+![alt text](https://github.com/ada/web-time/blob/master/screenshot.png?raw=true "Screenshot")
+
+
 # Features
 - Track and visualize your surfing habits on the web. 
 - Compare your surfing habits with yesterdays, previous week or month. 
