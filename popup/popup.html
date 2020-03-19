@@ -11,9 +11,10 @@
   <header id="navbar">
     <button type="button" class="tab-link btn btn-link" id="view-chart">Chart</button>
     <button type="button" class="tab-link btn btn-link" id="view-alarm">Alarm</button>
+    <button type="button" class="tab-link btn btn-link" id="view-rules">Rules</button>
     <button type="button" class="tab-link btn btn-link" id="view-options">Options</button>
     <button type="button" class="tab-link btn btn-link pull-right btn-icon" id="view-settings">
-      <svg style="opacity: 0.3;" width="20" height="20" viewBox="0 0 14 16" version="1.1" aria-hidden="true"><path fill-rule="evenodd" d="M14 8.77v-1.6l-1.94-.64-.45-1.09.88-1.84-1.13-1.13-1.81.91-1.09-.45-.69-1.92h-1.6l-.63 1.94-1.11.45-1.84-.88-1.13 1.13.91 1.81-.45 1.09L0 7.23v1.59l1.94.64.45 1.09-.88 1.84 1.13 1.13 1.81-.91 1.09.45.69 1.92h1.59l.63-1.94 1.11-.45 1.84.88 1.13-1.13-.92-1.81.47-1.09L14 8.75v.02zM7 11c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z"></path></svg>
+      <svg  width="20" height="20" viewBox="0 0 14 16" version="1.1" aria-hidden="true"><path fill-rule="evenodd" d="M14 8.77v-1.6l-1.94-.64-.45-1.09.88-1.84-1.13-1.13-1.81.91-1.09-.45-.69-1.92h-1.6l-.63 1.94-1.11.45-1.84-.88-1.13 1.13.91 1.81-.45 1.09L0 7.23v1.59l1.94.64.45 1.09-.88 1.84 1.13 1.13 1.81-.91 1.09.45.69 1.92h1.59l.63-1.94 1.11-.45 1.84.88 1.13-1.13-.92-1.81.47-1.09L14 8.75v.02zM7 11c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z"></path></svg>
     </button>
     <div class="clear"></div>
   </header>
@@ -40,16 +41,42 @@
       </path>
     </svg>
     <h3>Set daily reminder</h3>
-    <p class="text-gray"><strong id="alarmLabel"></strong></p>
+    
     <input type="range" id="alarm" name="alarm" min="0" max="60" value="0" step="5" title="Daily reminder">
+    <p class="text-gray" id="alarmLabel"></p>
+  </section>
 
-    <div style="margin:15px 0 0" hidden>
-      <label for="blockAfter" class="text-gray" id="blockAfterContainer" hidden>
-        <input type="checkbox" id="blockAfter" name="blockAfter" value="false"
-          title="Block access after reaching the limit">
-        Block after
-      </label>
-    </div>
+  <section id="rulesView" class="tabContent">
+    <form name="ruleForm" id="ruleForm" class="text-left">
+      <table>
+        <tr>
+          <td>
+            <label for="ruleDay">Day</label><br>
+            <select name="ruleDay" id="ruleDay">
+              <option value="-1">Any day</option>
+              <option value="1">Monday</option>
+              <option value="2">Teausday</option>
+              <option value="3">Wednesday</option>
+              <option value="4">Thursday</option>
+              <option value="5">Friday</option>
+              <option value="6">Saturday</option>
+              <option value="0">Sunday</option>
+            </select>
+          </td>
+          <td>
+            <label for="ruleTimeStart">From</label><br>
+            <input type="time" id="ruleTimeStart" name="ruleTimeStart">
+          </td>
+          <td>
+            <label for="ruleTimeEnd">To</label><br>
+            <input type="time" id="ruleTimeEnd" name="ruleTimeEnd">
+          </td>
+        </tr>
+      </table>
+      <input type="submit" id="ruleFormSubmit" name="ruleFormSubmit">
+    </form>
+
+
   </section>
 
   <section id="optionsView" class="tabContent">

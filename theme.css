@@ -3,10 +3,13 @@
 html, body {
   color: #192544;
   margin: 0;
-  transition: 0.3s;
   font-family: 'Open Sans', sans-serif;
   -webkit-font-smoothing: antialiased;
   text-shadow: 1px 1px 1px rgba(0,0,0,0.004);
+}
+
+.text-left {
+  text-align: left;
 }
 
 .text-center {
@@ -38,7 +41,7 @@ hr {
   color: #721c24;
 }
 
-header {
+header, form {
   border-bottom: 1px solid #f5f7f7;
 }
 
@@ -47,8 +50,7 @@ header {
 }
 
 section {
-  padding: 15px;
-  border-bottom: 1px solid #f5f7f7;
+  padding: 10px 15px;
 }
 
 .tabContent {
@@ -78,6 +80,7 @@ section {
 
 #navbar .btn:hover {
   cursor: pointer;
+  color: #2e3233;
 }
 
 #navbar .btn:focus {
@@ -91,21 +94,25 @@ section {
 }
 
 #navbar .btn-icon{
-  padding: 17px 8px 8px;
+  padding: 17px 8px 8px; 
+}
+
+#navbar #view-settings{
+  opacity: 0.3;
 }
 
 
-/* Chart view */
-#chartView #title{
-
+#navbar #view-settings:hover{
+  opacity: 0.6;
 }
+
 
 #chartView #subtitle{
   padding: 0 32px;
 }
 
 #chartView #chartContainer{
-  margin: 32px 0;
+  margin: 32px 0 8px;
 }
 
 .btn-group .btn{
