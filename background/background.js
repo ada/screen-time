@@ -3,6 +3,7 @@ import * as tracker from '../component/tracker.js';
 import { parseHostname } from '../component/util.js';
 import { add, clearEntries } from '../component/activity.js';
 import * as alarm from '../component/alarm.js';
+import * as rule from '../component/rule.js';
 
 // Minimum idle time in milliseconds to trigger user interactivity
 const minIdleTime = 1000;
@@ -86,34 +87,48 @@ async function initializeNewSessions(activeTabs){
     }
 
     let sessionMatch = _sessionCache.filter(element => element.hostname === hostname);
-    let filteredHostSettings = _settings.hosts.filter(element => element.hostname === hostname);
-    let hostSettings;
-
-    if (filteredHostSettings.length) {
-      hostSettings = filteredHostSettings[0];
-    }
-
+    
     if (sessionMatch.length === 0) {
+      // It's a new session
       browser.browserAction.setBadgeText({ text: "", tabId: activeTabs[i].id });
       
+      // Check host settings
+      let hostSettingsIndex = _settings.hosts.findIndex(element => element.hostname === hostname);
+
+      // Init alarms when it's a new session
+      if (hostSettingsIndex > -1) {
+        const hostSettings = _settings.hosts[hostSettingsIndex]; 
+        console.log(hostSettings);
+
+        // process access rules
+        if (hostSettings.rules.length) {
+          console.log("checking host rules.");
+          await rule.check(hostname);
+        }
+
+        // process alarms
+        if (hostSettings.alarms.length) {
+          console.log("checking host alarms.");
+          await alarm.clear(hostname);
+          await alarm.set(hostname, activeTabs[i].tabId);
+        }
+      }
+
       console.log("Session started: " + hostname);
       _sessionCache.push({
         hostname: hostname,
         created: new Date()
       });
-      // Init alarms when it's a new session
-      if (hostSettings && hostSettings.limits.length) {
-        alarm.clear(hostname);
-        let timeleft = alarm.set(hostname, activeTabs[i].tabId);
-      }
+
     } else {
+      // It's an old session. Update badge text only. 
       let now = new Date();
       let sessionCreationTime = new Date(sessionMatch[0].created);
       let badge = ((now - sessionCreationTime) / 1000) / 60;
       var multiplier = Math.pow(10, 1 || 0);
       badge = Math.round(badge * multiplier) / multiplier;
       browser.browserAction.setBadgeText({ text: "" + badge, tabId: activeTabs[i].id });
-      console.log("Usage: " + badge + " tabId: " + activeTabs[i].id)
+      //console.log("Usage: " + badge + " tabId: " + activeTabs[i].id)
     }
   };
 }
@@ -207,7 +222,7 @@ async function detectIdleUser() {
     console.log("User is idle. Flushing cache...");
     await writeCacheToStorage(true);
   } else {
-    console.log("user is active.")
+    //console.log("user is active.")
   }
 }
 

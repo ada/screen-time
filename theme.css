@@ -37,12 +37,43 @@ hr {
   width: 400px;
 }
 
-#serror {
-  color: #721c24;
+
+header {
+  border-bottom: 1px solid #f5f7f7;
 }
 
-header, form {
+table{
+  width: 100%;
+  padding: 10px 0;
+  border-collapse: collapse;
+}
+
+table td{
+  padding: 4px 4px 4px 0;
+}
+
+.table-bordered tbody{
   border-bottom: 1px solid #f5f7f7;
+  border-top: 1px solid #f5f7f7;
+}
+
+form{
+  margin: 10px auto;
+}
+
+form input[type="text"], 
+form select {
+  width: 100%;
+}
+
+form input[type="time"]{
+  width: 95%;
+}
+
+form label, table th{
+  color : #a3a8b5;
+  font-weight: normal;
+  text-align: left;
 }
 
 .clear {
@@ -153,8 +184,23 @@ section {
   width: 100%;
 }
 
+.btn-sm{
+  padding: 5px 5px;
+}
+
 .btn-lg{
   padding: 15px 30px; 
+}
+
+.btn-link{
+  appearance: none;
+  border: none;
+  background: none;
+  padding: 0;
+  margin:0;
+  display: inline-block;
+  font-size: inherit;
+  color : #0095ff;
 }
 
 .btn-primary{
@@ -169,4 +215,12 @@ section {
 
 .btn-primary:focus{
   background-color: #007ed8;
+}
+
+/* 
+Rules
+*/
+
+#ruleDay{
+  height: 24px;
 }

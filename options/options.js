@@ -45,7 +45,7 @@ async function init() {
     Reset settings to default settings
 */
 async function resetSettings() {
-    await settings.set(settings.defaults);
+    await settings.reset(); 
     init(); 
 }
 
@@ -53,7 +53,7 @@ async function resetSettings() {
     Clear all collected data
 */
 async function resetData() {
-    activity.set([]);
+    await activity.set([]);
 }
 
 /*
