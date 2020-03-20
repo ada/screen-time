@@ -50,7 +50,7 @@ export async function set(hostname, tabId) {
         return;
     }
 
-    if (!hostSettings.hasOwnProperty('limits')) {
+    if (!hostSettings.hasOwnProperty('alarms')) {
         return;
     }
 
@@ -58,25 +58,25 @@ export async function set(hostname, tabId) {
     let sessions = activity.sessions || [];
     var now = new Date();
 
-    hostSettings.limits.forEach(limitation => {
-        if (limitation.threshold !== 0) {
+    hostSettings.alarms.forEach(alarm => {
+        if (alarm.value !== 0) {
             let currentUsage = sessions.reduce(function (accumulator, session) {
                 let created = new Date(session.created);
 
-                if (limitation.period === 'day') {
+                if (alarm.period === 'day') {
                     return isSameDay(now, created) ? accumulator + session.duration : accumulator;
                 } else {
-                    throw new Error("Limitation type not suppoed.");
+                    throw new Error("alarm type not suppoed.");
                 }
             }, 0);
 
-            if (currentUsage >= limitation.threshold) {
+            if (currentUsage >= alarm.value) {
                 onDailyLimitReached({
                     hostname: hostname,
                     blockAfter: _settings.blockAfter
                 });
             } else {
-                timeLeft = limitation.threshold - currentUsage;
+                timeLeft = alarm.value - currentUsage;
                 console.log(`current usage: ${currentUsage / 1000 / 60} minutes`);
                 console.log(`time left: ${timeLeft / 1000 / 60} minutes`);
                 

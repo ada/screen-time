@@ -2,7 +2,7 @@ import * as settings from './settings.js';
 
 export var UIRangeAlarm = document.getElementById("alarm");
 let UIRangeAlarmLabel = document.getElementById("alarmLabel");
-let _settings, _hostname; 
+let _settings, _hostname;
 UIRangeAlarm.addEventListener("change", onAlarmSettingsChanged);
 UIRangeAlarm.addEventListener("input", updateAlarmLabel);
 
@@ -11,26 +11,26 @@ UIRangeAlarm.addEventListener("input", updateAlarmLabel);
 */
 async function onAlarmSettingsChanged() {
     let i = _settings.hosts.findIndex(element => element.hostname === _hostname);
-    let limitArray = [{
-            period: "day",
-            threshold: UIRangeAlarm.value * 60 * 1000,
-            blockAfter: false
-        }];
+    let alarmsArray = [{
+        period: "day",
+        value: UIRangeAlarm.value * 60 * 1000,
+        blockAfter: false
+    }];
 
     if (UIRangeAlarm.value === 0) {
-        limitArray = [];
+        alarmsArray = [];
     }
 
     if (i === -1) {
         _settings.hosts.push(
             {
                 hostname: _hostname,
-                limits: limitArray,
-                accessRules: []
+                alarms: alarmsArray,
+                rules: []
             }
         );
     } else {
-        _settings.hosts[i].limits = limitArray
+        _settings.hosts[i].alarms = alarmsArray;
     }
 
     await settings.set(_settings);
@@ -52,12 +52,12 @@ export async function updateAlarmLabel() {
 */
 export async function init(hostname) {
     _settings = await settings.get();
-    _hostname = hostname; 
+    _hostname = hostname;
 
     let i = _settings.hosts.findIndex(host => host.hostname === _hostname);
     if (i > -1) {
-        if (_settings.hosts[i].limits.length > 0) {
-            UIRangeAlarm.value = _settings.hosts[i].limits[0].threshold / 1000 / 60;
+        if (_settings.hosts[i].alarms.length > 0) {
+            UIRangeAlarm.value = _settings.hosts[i].alarms[0].value / 1000 / 60;
         } else {
             UIRangeAlarm.value = 0;
         }
