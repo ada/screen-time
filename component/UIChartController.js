@@ -1,5 +1,5 @@
 import * as settings from './settings.js';
-import { get as getChartOptions } from './chartOptions.js';
+import { defaultChartOptions } from './chartOptions.js';
 import * as activity from './/activity.js';
 
 let _settings, _nDays, _chart, _host, _hostname; 
@@ -43,7 +43,7 @@ async function updateChart() {
     _chart.data.datasets[1].data = data.yLimit;
     _chart.data.datasets[2].data = data.yCompare;
     _chart.data.labels = data.x;
-    _chart.options = getChartOptions(_nDays);
+    _chart.options = defaultChartOptions;
     _chart.update();
     updateSubtitle(data);
     updateChartSubtitle();
@@ -53,10 +53,14 @@ async function updateChart() {
     Init chart
 */
 export async function init(hostname) {
+    if (hostname === undefined) {
+        throw new Error("Hostname is undefined.");
+    }
+
     /* 
         Notify background.js to write current cache to disk. This to get the most recent data.
     */
-    browser.runtime.sendMessage({ id: "WRITE_CACHE_TO_STORAGE", hostname: _hostname });
+    browser.runtime.sendMessage({ id: "WRITE_CACHE_TO_STORAGE", hostname: hostname });
 
     _hostname = hostname; 
     _settings = await settings.get();
@@ -113,7 +117,7 @@ export async function init(hostname) {
             labels: data.x,
             datasets: datasets
         },
-        options: getChartOptions(_nDays)
+        options: defaultChartOptions
     });
 
     await updateSubtitle(data);
@@ -184,7 +188,7 @@ async function updateSubtitle(data) {
     High light the button corresponding to the active nDays
 */
 async function updateChartSubtitle() {
-    let _cp = document.getElementById("chartViewOptions").getElementsByClassName("btn-link");
+    let _cp = document.getElementById("chartViewOptions").getElementsByClassName("btn-chart-option");
 
     for (let index = 0; index < _cp.length; index++) {
         const element = _cp[index];

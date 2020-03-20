@@ -37,6 +37,10 @@ export async function get(options) {
     Add a new activity
 */
 export async function add(hostname, created, duration) {
+    if (hostname === undefined) {
+        throw new Error("Hostname is undefined.");
+    }
+    
     try {
         let sessions = await get();
         let index = sessions.findIndex(element => element.hostname === hostname);
@@ -60,6 +64,10 @@ export async function add(hostname, created, duration) {
     Clear activities for a hostname or all activites
 */
 export async function clear(hostname) {
+    if (hostname === undefined) {
+        throw new Error("Hostname is undefined.");
+    }
+
     let sessions = await get();
 
     if (hostname.length > 0) {

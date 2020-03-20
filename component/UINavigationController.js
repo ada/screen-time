@@ -6,6 +6,7 @@ let UIButtonViewAlarm = document.getElementById("view-alarm");
 let UIButtonViewOptions = document.getElementById("view-options");
 let UIBUttonViewRules = document.getElementById("view-rules")
 let UIButtonViewSettings = document.getElementById("view-settings");
+let UIButtonAddRule = document.getElementById("button-add-rule");
 
 UIButtonViewChart.addEventListener("click", onTabNavigation);
 UIButtonViewAlarm.addEventListener("click", onTabNavigation);
@@ -21,7 +22,6 @@ async function openSettings(e) {
 }
 
 async function onTabNavigation(e) {
-
     let tabcontent = document.getElementsByClassName("tabContent");
 
     for (let i = 0; i < tabcontent.length; i++) {
@@ -39,10 +39,25 @@ async function onTabNavigation(e) {
     let targetId = e.srcElement.id.replace("view-", "") + "View";
     document.getElementById(targetId).style.display = "block";
     e.currentTarget.className += " btn-active";
+    customizeTabBarForView(targetId);
+}
+
+async function customizeTabBarForView(view){
+    switch (view) {
+        case 'rulesView':
+            UIButtonAddRule.hidden = false; 
+            UIButtonViewSettings.hidden = true; 
+            break;
+        default:
+            UIButtonAddRule.hidden = true;
+            UIButtonViewSettings.hidden = false;  
+            break;
+    }
 }
 
 export async function init(isTracked){
     _settings = await settings.get();
+
     if (isTracked === true) {
         UIButtonViewChart.click();
         if(_settings.track.all === true){

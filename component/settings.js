@@ -17,15 +17,14 @@ export const defaults = {
 }
 
 /* 
-    Host settings example
+    // Example host object
     [{
         hostname: _hostname,
         alarms: [
             {period: "day", value: 1 * 60 * 1000, blockAfter: false}
         ],
         rules: [
-            {day: "3", start: "10:22:00.000", end: "10:25:00.000"},
-            {day: "5", start: "10:22:00.000", end: "10:25:00.000"}
+            {day: "3", start: "10:22:00.000", end: "10:25:00.000"}
         ]
     }]
 */
@@ -41,6 +40,9 @@ export async function set(obj) {
     console.log("Settings saved.");
 }
 
+/* 
+    Reset settings
+*/
 export async function reset() {
     await set(defaults);
 }

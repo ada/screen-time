@@ -26,5 +26,9 @@ async function untrack() {
 }
 
 export async function init(hostname){
+    if (hostname === undefined) {
+        throw new Error("Hostname is undefined.");
+    }
+    
     _hostname = hostname; 
 }

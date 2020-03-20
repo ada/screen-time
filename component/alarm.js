@@ -37,12 +37,12 @@ export async function clear(hostname) {
 /* 
     Create alarms for the given hostname
 */
-export async function set(hostname, tabId) {
-    var timeLeft = -1;
+export async function set(hostname) {
     if (hostname === undefined) {
         throw new Error("Hostname is undefined.");
     }
 
+    let timeLeft = -1;
     let _settings = await settings.get();
     let hostSettings = _settings.hosts.filter(element => element.hostname === hostname)[0];
 

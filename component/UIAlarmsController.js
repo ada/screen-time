@@ -51,6 +51,10 @@ export async function updateAlarmLabel() {
     Retrieve host settings for the current hostname
 */
 export async function init(hostname) {
+    if (hostname === undefined) {
+        throw new Error("Hostname is undefined.");
+    }
+    
     _settings = await settings.get();
     _hostname = hostname;
 

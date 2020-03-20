@@ -11,6 +11,8 @@ let UIInputRuleEndTime = document.getElementById("ruleTimeEnd");
 let UIInputRuleStartTime = document.getElementById("ruleTimeStart");
 let UIInputRuleDay = document.getElementById("ruleDay");
 let UITableRules = document.getElementById("rulesTable");
+let UITabItemAddRule = document.getElementById("button-add-rule");
+let UIButtonCancelForm = document.getElementById("ruleFormCancel"); 
 
 async function onRulesChanged() {
     let _settings = await settings.get(); 
@@ -40,7 +42,7 @@ async function list() {
     let html = `<thead><tr><th width="25%">Day</th><th width="25%">Start</th><th width="25%">End</th><th width="25%">Action</th></tr></thead><tbody>`;
     for (let i = 0; i < _rules.length; i++) {
         const r = _rules[i];
-        html += `<tr><td>${r.day > -1 ? days[r.day] : "Any"}</td><td>${formatTime(r.start)}</td><td>${formatTime(r.end)}</td><td class="text-center"><button class="buttonDeleteRule btn btn-link" alt="Delete${i}">Delete</button> | <button class="btnEditRule btn btn-link" alt="Edit${i}">Edit</button></td></tr>`;
+        html += `<tr><td>${r.day > -1 ? days[r.day] : "Any"}</td><td>${formatTime(r.start)}</td><td>${formatTime(r.end)}</td><td><button type="button" class="btn btn-link btnEditRule" alt="Edit${i}">Edit</button> | <button type="button" class="btn btn-link buttonDeleteRule" alt="Delete${i}">Delete</button></td></tr>`;
     }
     html += `</tbody>`;
     UITableRules.innerHTML = html;
@@ -79,6 +81,7 @@ async function onFormSubmit(e) {
     }
 
     list();
+    hideForm();
     _operation = "add";
 }
 
@@ -96,12 +99,29 @@ async function edit(e) {
     UIInputRuleDay.value = rule.day;
     UIInputRuleStartTime.value = rule.start;
     UIInputRuleEndTime.value = rule.end;
+    showForm();
+}
+
+function showForm(){
+    document.getElementById("ruleForm").hidden = false; 
+    document.getElementById("rulesTable").hidden = true; 
+}
+
+function hideForm(){
+    _operation = "add"; 
+    document.getElementById("ruleForm").hidden = true; 
+    document.getElementById("rulesTable").hidden = false; 
 }
 
 export async function init(hostname) {
+    if (hostname === undefined) {
+        throw new Error("Hostname is undefined.");
+    }
+    
     _hostname = hostname;
     UIButtonAddRule.addEventListener("click", onFormSubmit);
-    
+    UITabItemAddRule.addEventListener("click", showForm);
+    UIButtonCancelForm.addEventListener("click", hideForm); 
     let _settings = await settings.get();
     let i = _settings.hosts.findIndex(host => host.hostname === hostname);
     if (i > -1) {
