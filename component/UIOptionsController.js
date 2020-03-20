@@ -1,8 +1,7 @@
-import * as settings from './settings.js';
 import * as tracker from './tracker.js';
-import * as activity from './/activity.js';
+import * as activity from './activity.js';
 
-let _settings, _hostname; 
+let _hostname; 
 let UIButtonEnableTracking = document.getElementById("enableTracking");
 let UIButtonDisableTracking = document.getElementById("disableTracking");
 

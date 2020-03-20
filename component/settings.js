@@ -1,14 +1,48 @@
 import { isEmptyObject } from "./util.js";
 
 /* 
+    Default settings when using the extension for the first time
+*/
+export const defaults = {
+    chart: {
+        nDays: 7
+    },
+    track: {
+        all: true,
+        duration: 30
+    },
+    hosts: [],
+    theme: "light",
+    blocketAfter: false
+}
+
+/* 
+    Host settings example
+    [{
+        hostname: _hostname,
+        alarms: [
+            {period: "day", value: 1 * 60 * 1000, blockAfter: false}
+        ],
+        rules: [
+            {day: "3", start: "10:22:00.000", end: "10:25:00.000"},
+            {day: "5", start: "10:22:00.000", end: "10:25:00.000"}
+        ]
+    }]
+*/
+
+/* 
     Set settings object
 */
 export async function set(obj) {
     await browser.storage.sync.set({
         "settings": obj
     });
-    
+
     console.log("Settings saved.");
+}
+
+export async function reset() {
+    await set(defaults);
 }
 
 /*
@@ -21,21 +55,4 @@ export async function get() {
         return defaults;
     }
     return obj.settings;
-}
-
-/* 
-    Default settings when using the extension for the first time
-*/
-export const defaults = {
-    chart: {
-        nDays: 7
-    },
-    track: {
-        all: true,
-        duration: 30
-    },
-    hosts: [], 
-    accessRules : [], 
-    theme : "light", 
-    blocketAfter : false
 }
