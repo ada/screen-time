@@ -23,7 +23,7 @@ export var defaultChartOptions = {
             }
         },
         y: {
-            display: true,
+            display: false,
             ticks: {
                 beginAtZero: true
             },

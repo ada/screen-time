@@ -27,9 +27,9 @@ export async function track(hostname) {
     let _settings = await settings.get();
     if (_settings.hosts.indexOf(hostname) === -1) {
         _settings.hosts.push({
-            accessRules: [],
+            rules: [],
             hostname: hostname,
-            limits: [],
+            alarms: [],
         });
         await settings.set(_settings);
     }

@@ -31,20 +31,26 @@ async function onRulesChanged() {
     }
 
     await settings.set(_settings);
-}
-
-
-function formatTime(time) {
-    return time.substring(0, 5);
+    browser.runtime.sendMessage({ id: "HOST_SETTINGS_CHANGED", hostname: _hostname });
 }
 
 async function list() {
-    let html = `<thead><tr><th width="25%">Day</th><th width="25%">Start</th><th width="25%">End</th><th width="25%">Action</th></tr></thead><tbody>`;
-    for (let i = 0; i < _rules.length; i++) {
-        const r = _rules[i];
-        html += `<tr><td>${r.day > -1 ? days[r.day] : "Any"}</td><td>${formatTime(r.start)}</td><td>${formatTime(r.end)}</td><td><button type="button" class="btn btn-link btnEditRule" alt="Edit${i}">Edit</button> | <button type="button" class="btn btn-link buttonDeleteRule" alt="Delete${i}">Delete</button></td></tr>`;
+    let html = "";
+
+    if ( _rules.length === 0) {
+        html = `<p class="text-center text-gray text-lead">No rules have been set for this hostname. To create a new rule, click the "+" button.</p> `;
+    } else {
+        html = `<table  class="table-bordered table-stripped"><thead><tr><th width="25%">Day</th><th width="25%">Start</th><th width="25%">End</th><th width="25%">Action</th></tr></thead><tbody>`;
+    
+        for (let i = 0; i < _rules.length; i++) {
+            const r = _rules[i];
+            html += `<tr><td>${r.day > -1 ? days[r.day] : "Any"}</td><td>${r.start}</td><td>${r.end}</td><td><button type="button" class="btn btn-link btnEditRule" alt="Edit${i}">Edit</button> | <button type="button" class="btn btn-link buttonDeleteRule" alt="Delete${i}">Delete</button></td></tr>`;
+        }
+
+        html += `</tbody></table>`;
     }
-    html += `</tbody>`;
+
+    
     UITableRules.innerHTML = html;
 
     UITableRules.querySelectorAll("button.buttonDeleteRule").forEach(function (el) {
@@ -54,8 +60,6 @@ async function list() {
     UITableRules.querySelectorAll("button.btnEditRule").forEach(function (el) {
         el.addEventListener("click", edit);
     });
-
-    onRulesChanged();
 }
 
 async function onFormSubmit(e) {
@@ -69,8 +73,8 @@ async function onFormSubmit(e) {
 
     let rule = {
         day: UIInputRuleDay.value,
-        start: start,
-        end: end, 
+        start: start.replace(".000",""),
+        end: end.replace(".000",""), 
         allow : true
     };
 
@@ -81,6 +85,7 @@ async function onFormSubmit(e) {
     }
 
     list();
+    onRulesChanged();
     hideForm();
     _operation = "add";
 }
@@ -90,6 +95,7 @@ async function del(e) {
     _selectedIndex = parseInt(e.srcElement.attributes.alt.value.replace("Delete", ""));
     _rules.splice(_selectedIndex, 1);
     list();
+    onRulesChanged();
 }
 
 async function edit(e) {
@@ -122,10 +128,16 @@ export async function init(hostname) {
     UIButtonAddRule.addEventListener("click", onFormSubmit);
     UITabItemAddRule.addEventListener("click", showForm);
     UIButtonCancelForm.addEventListener("click", hideForm); 
+    
     let _settings = await settings.get();
-    let i = _settings.hosts.findIndex(host => host.hostname === hostname);
-    if (i > -1) {
-        _rules = _settings.hosts[i].rules; 
-        list(); 
+    let index = _settings.hosts.findIndex(host => host.hostname === hostname);
+
+    if (index > -1) {
+        _rules = _settings.hosts[index].rules;   
     }
+
+    list(); 
 }
+
+
+

@@ -1,6 +1,7 @@
 import { get } from './activity.js';
 import { isSameDay } from './util.js';
-import * as settings from '../component/settings.js';
+import * as settings from './settings.js';
+import {blockHostname} from './rule.js';
 
 export var alarms = [];
 var UID_PREFIX_EXPIRED = "expired_";
@@ -148,15 +149,9 @@ async function onDailyLimitReached(options) {
     });
 
     //setTimeout(ClearNotificationWithUID, 30000, uid);
-
+    
     if (options.blockAfter === true) {
-        let tabs = await browser.tabs.query({ url: "*://*." + options.hostname + "/*" });
-        for (let i = 0; i < tabs.length; i++) {
-            const tab = tabs[i];
-            browser.tabs.executeScript(tab.id, {
-                code: 'document.body.textContent = "Website blocked by Web Time."; document.body.style.background = "black"; document.body.style.color = "gray"; document.body.style.textAlign = "center"'
-            });
-        }
+        blockHostname(options.hostname, "ALARM_TIMEOUT");
     }
 
 }

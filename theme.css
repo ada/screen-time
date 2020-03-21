@@ -21,7 +21,7 @@ html, body {
   color: #a3a8b5;
 }
 
-.text-lead{
+.lead{
   font-size: medium;
 }
 
@@ -163,7 +163,7 @@ section {
 }
 
 
-#chartView #subtitle{
+.text-lead{
   padding: 0 32px;
 }
 

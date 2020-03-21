@@ -19,7 +19,7 @@ export const defaults = {
 /* 
     // Example host object
     [{
-        hostname: _hostname,
+        hostname: "example.com",
         alarms: [
             {period: "day", value: 1 * 60 * 1000, blockAfter: false}
         ],

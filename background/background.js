@@ -1,9 +1,9 @@
-import {get as settings_get} from '../component/settings.js';
-import {isTracked as tracker_isTracked} from '../component/tracker.js';
-import {parseHostname as util_parseHostname} from '../component/util.js';
-import {add as activity_add, clearEntries as activity_clearEntries} from '../component/activity.js';
-import {clear as alarm_clear, set as alarm_set} from '../component/alarm.js';
-import {check as rule_check} from '../component/rule.js';
+import { get as settings_get } from '../component/settings.js';
+import { isTracked as tracker_isTracked } from '../component/tracker.js';
+import { parseHostname as util_parseHostname } from '../component/util.js';
+import { add as activity_add, clearEntries as activity_clearEntries } from '../component/activity.js';
+import { clear as alarm_clear, set as alarm_set } from '../component/alarm.js';
+import { check as rule_check, blockHostname } from '../component/rule.js';
 
 // Minimum idle time in milliseconds to trigger user interactivity
 const minIdleTime = 1000;
@@ -11,7 +11,7 @@ const minIdleTime = 1000;
 // Timer for idle time detection
 let _idleTimeout;
 
-// Copy of global settings
+// Extension settings
 let _settings;
 
 // Temporary cache storage for sessions
@@ -53,7 +53,7 @@ async function init() {
 
   // Detect if user is idle every minute
   setInterval(detectIdleUser, 60000);
-  setInterval(updateBadgeText, 5000);
+  //setInterval(updateBadgeText, 5000);
 }
 
 /* 
@@ -70,8 +70,9 @@ async function updateBadgeText() {
 async function onUserInteraction() {
   _lastUserInteractionTime = new Date();
   let activeTabs = await browser.tabs.query({ active: true });
-  await initializeNewSessions(activeTabs);
-  await finalizeDeadSessions(activeTabs);
+  _settings = await settings_get();
+  initializeNewSessions(activeTabs);
+  finalizeDeadSessions(activeTabs);
 }
 
 /* 
@@ -79,66 +80,46 @@ async function onUserInteraction() {
 */
 async function initializeNewSessions(activeTabs) {
   for (let i = 0; i < activeTabs.length; i++) {
-    let hostname = util_parseHostname(activeTabs[i].url);
+    const hostname = util_parseHostname(activeTabs[i].url);
+    const sessionMatch = _sessionCache.filter(element => element.hostname === hostname);
 
-    // Continue to next active tab if hostname is not tracked
-    if (await tracker_isTracked(hostname) === false) {
+    // Continue to next active tab if hostname is not tracked or if it's already in cache
+    if (await tracker_isTracked(hostname) === false || sessionMatch.length > 0) {
       continue;
     }
 
-    let sessionMatch = _sessionCache.filter(element => element.hostname === hostname);
+    // Check host settings
+    const hostSettingsIndex = _settings.hosts.findIndex(element => element.hostname === hostname);
 
-    if (sessionMatch.length === 0) {
-      // It's a new session
-      browser.browserAction.setBadgeText({ text: "", tabId: activeTabs[i].id });
-
-      // Check host settings
-      let hostSettingsIndex = _settings.hosts.findIndex(element => element.hostname === hostname);
-
-      // Init alarms when it's a new session
-      if (hostSettingsIndex > -1) {
-        const hostSettings = _settings.hosts[hostSettingsIndex];
-        console.log(hostSettings);
-
-        // process access rules
-        if (hostSettings.rules.length) {
-          const grantAccess = await rule_check(hostname);
-          if (grantAccess === false) {
-            //console.log("Access denied.");
-            let tabs = await browser.tabs.query({ url: "*://*." + hostname + "/*" });
-            for (let i = 0; i < tabs.length; i++) {
-              const tab = tabs[i];
-              browser.tabs.executeScript(tab.id, {
-                code: 'document.body.textContent = "Website blocked by Web Time."; document.body.style.background = "black"; document.body.style.color = "gray"; document.body.style.textAlign = "center"'
-              });
-            }
-          }
-        }
-
-        // process alarms
-        if (hostSettings.alarms.length) {
-          await alarm_clear(hostname);
-          await alarm_set(hostname);
+    // hostname has settings
+    if (hostSettingsIndex > -1) {
+      const hostSettings = _settings.hosts[hostSettingsIndex];
+      //console.log(hostSettings);
+      
+      // process access rules
+      if (hostSettings.rules.length) {
+        const grantAccess = await rule_check(hostname);
+        if (grantAccess === false) {
+          blockHostname(hostname, "RULES_NOT_MATCHED");
+          continue;
         }
       }
 
-      console.log("Session started: " + hostname);
-      _sessionCache.push({
-        hostname: hostname,
-        created: new Date()
-      });
-
-    } else {
-      // It's an old session. Update badge text only. 
-      let now = new Date();
-      let sessionCreationTime = new Date(sessionMatch[0].created);
-      let badge = ((now - sessionCreationTime) / 1000) / 60;
-      var multiplier = Math.pow(10, 1 || 0);
-      badge = Math.round(badge * multiplier) / multiplier;
-      browser.browserAction.setBadgeText({ text: "" + badge, tabId: activeTabs[i].id });
-      //console.log("Usage: " + badge + " tabId: " + activeTabs[i].id)
+      // process alarms
+      if (hostSettings.alarms.length) {
+        await alarm_clear(hostname);
+        await alarm_set(hostname);
+      }
     }
-  };
+
+    // Add to cache
+    _sessionCache.push({
+      hostname: hostname,
+      created: new Date()
+    });
+
+    console.log("Session started: " + hostname);
+  }
 }
 
 /* 
@@ -179,22 +160,30 @@ async function OnTabUpdated(tabId, changeInfo, tabInfo) {
 }
 
 /* 
-  Trigger user interaction when window focus changes
+  Trigger user interaction when window focus changes.
 */
 async function OnWindowFocusChanged(windowId) {
   clearTimeout(_idleTimeout);
   _idleTimeout = setTimeout(onUserInteraction, minIdleTime);
 }
 
+/* 
+  Messages from popup or other modules are handled here.
+*/
 async function handleMessage(message) {
-  //console.log(message);
+  console.log(message);
   switch (message.id) {
     case 'WRITE_CACHE_TO_STORAGE':
       await writeCacheToStorage();
       break;
     case 'RESET_ALARM_FOR_HOSTNAME':
-      await alarm_clear(message.data);
-      await alarm_set(message.data);
+      await alarm_clear(message.hostname);
+      await alarm_set(message.hostname);
+      break;
+    case 'HOST_SETTINGS_CHANGED':
+      const tabs = await browser.tabs.query({ active: true, currentWindow: true });
+      await browser.tabs.update(tabs[0].id, { url: tabs[0].url });
+      onUserInteraction();
       break;
     default:
       throw new Error(`Message id "${message.id}" is not implementd.`)
@@ -208,7 +197,7 @@ async function handleMessage(message) {
 */
 async function writeCacheToStorage(flush = false) {
   if (_sessionCache.length === 0) {
-    return;  
+    return;
   }
 
   for (let i = 0; i < _sessionCache.length; i++) {
