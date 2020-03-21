@@ -73,8 +73,8 @@ async function onFormSubmit(e) {
 
     let rule = {
         day: UIInputRuleDay.value,
-        start: start.replace(".000",""),
-        end: end.replace(".000",""), 
+        start: start.substring(0, 5),
+        end: end.substring(0, 5), 
         allow : true
     };
 
