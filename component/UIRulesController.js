@@ -38,7 +38,7 @@ async function list() {
     let html = "";
 
     if ( _rules.length === 0) {
-        html = `<p class="text-center text-gray text-lead">No rules have been set for this hostname. To create a new rule, click the "+" button.</p> `;
+        html = `<p class="text-center text-gray" style="padding:20px">No rules have been set for this hostname. To create a new rule, click the "+" button.</p> `;
     } else {
         html = `<table  class="table-bordered table-stripped"><thead><tr><th>Day</th><th>Start</th><th>End</th><th width="30%">Action</th></tr></thead><tbody>`;
     

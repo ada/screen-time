@@ -13,27 +13,26 @@
   <form>
     <section>
       <h4>Tracking</h4>
-      <p>
+      
         <input type="checkbox" id="checkboxTrackAll">
         <label for="checkboxTrackAll">Track all hostnames</label>
-      </p>
+      
     </section>
 
     <section>
       <h4>Alarms</h4>
-      <p>
+      
         <input type="checkbox" id="blockAfter" name="blockAfter" value="false" title="Access">
         <label for="blockAfter">Block access after reaching the daily time limit</label>
-      </p>
+      
     </section>
 
     <section>
       <h4>Chart</h4>
-      <p></p>
       <table width="100%">
         <tr>
           <td width="75%">
-            <label for="defaultChartView">Default chart view:</label>
+            <label for="defaultChartView">Default chart view</label>
           </td>
           <td style="text-align: right;">
             <select name="defaultChartView" id="defaultChartView" required>
@@ -44,7 +43,6 @@
           </td>
         </tr>
       </table>
-      </p>
     </section>
 
     <section>
@@ -55,19 +53,18 @@
 
     <section>
       <h4>Data</h4>
-      <p>
-        <table width="100%">
-          <tr>
-            <td width="75%">
-              <label for="trackingDuration">Periodically remove data older than <span id="trackingDurationLabel"></span>
-                days.</label>
-            </td>
-            <td style="text-align: right;">
-              <input type="range" id="trackingDuration" name="trackingDuration" min="7" max="30" value="30" step="1" required style="width: 80px;"> 
-            </td>
-          </tr>
-        </table>
-      </p>
+      <table width="100%">
+        <tr>
+          <td width="75%">
+            <label for="trackingDuration">Periodically remove data older than <span id="trackingDurationLabel"></span>
+              days.</label>
+          </td>
+          <td style="text-align: right;">
+            <input type="range" id="trackingDuration" name="trackingDuration" min="7" max="30" value="30" step="1" required style="width: 80px;"> 
+          </td>
+        </tr>
+      </table>
+
       <h4>Clear all data</h4>
       <small class="text-gray">Clear data to clear all collected data about your browsing history. Settings, alarms and rules for individual websites won't be affected.</small>
       <div><button id="resetData" type="button">Clear data</button></div>

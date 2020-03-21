@@ -69,6 +69,14 @@ header {
   width: 400px;
 }
 
+#options h4{
+  margin: 25px 0 5px 0;
+}
+
+#options label{
+  color: #9D9D9D;
+}
+
 @media (prefers-color-scheme: ligth) {
   #options {
     background-color: rgb(247, 247, 247);
@@ -175,10 +183,22 @@ button {
   background-color: #EDEDED;
 }
 
+input[type="button"]:hover, 
+input[type="submit"]:hover, 
+button:hover{
+  background-color: red;
+}
+
 @media (prefers-color-scheme: dark) {
   input[type="button"], input[type="submit"], button {
     background-color: #484848;
     color: white; 
+  }
+
+  input[type="button"]:hover, 
+  input[type="submit"]:hover, 
+  button:hover{
+    background-color: #545454;
   }
 
   form input[type="text"], 
@@ -187,19 +207,6 @@ button {
   form select{
     color: white; 
   }
-}
-
-.button-primary {
-  background-color: #4EA1E1;
-  color: white;
-}
-
-.button-primary:hover {
-  background-color: rgb(92, 172, 233);
-}
-
-.button-primary:focus {
-  background-color: rgb(89, 173, 236);
 }
 
 .button-active {
@@ -211,6 +218,19 @@ button {
     background-color: #545454;
     color: white; 
   }
+}
+
+.button-primary {
+  background-color: rgba(40, 129, 197, 1) !important;
+  color: white;
+}
+
+.button-primary:hover {
+  background-color: rgba(40, 129, 210, 1) !important;
+}
+
+.button-primary:focus {
+  background-color: rgba(40, 129, 197, 1) !important;
 }
 
 /* 
@@ -288,17 +308,13 @@ nav #view-settings:hover, nav #button-add-rule:hover {
 /* 
   Chart view 
 */
-
 #chartView #chartContainer {
   margin: 32px 0 8px;
 }
 
 /* 
-  Rules view 
+  Button group
 */
-
-/* button group */
-
 .button-group button {
   margin-right: -5px;
 }
