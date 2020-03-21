@@ -16,21 +16,22 @@ export async function check(hostname) {
     const hostSettings = _settings.hosts[hostSettingsIndex];
     const now = new Date();
     const currentDay = now.getDay();
-    const currentTime = `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
+    const currentTime = `${now.getHours()}:${now.getMinutes()}}`;
 
     for (let i = 0; i < hostSettings.rules.length; i++) {
         const rule = hostSettings.rules[i];
-        if ((Number(rule.day) === -1 || 
-            Number(rule.day) == currentDay) && 
-            currentTime >= rule.start && 
+        if ((Number(rule.day) === -1 ||
+            Number(rule.day) == currentDay) &&
+            currentTime >= rule.start &&
             currentTime < rule.end) {
             grantAccess = true;
         }
     }
+
     return grantAccess;
 }
 
-export async function blockHostname(hostname, cause){
+export async function blockHostname(hostname, cause) {
     if (hostname === undefined) {
         throw new Error("Hostname is undefined.");
     }
@@ -42,9 +43,9 @@ export async function blockHostname(hostname, cause){
         case 'RULES_NOT_MATCHED':
             message = 'No rules were satisfied.';
             break;
-        case 'ALARM_TIMEOUT': 
-            message = 'You have reached your daily limit.'; 
-            break; 
+        case 'ALARM_TIMEOUT':
+            message = 'You have reached your daily limit.';
+            break;
         default:
             message = cause;
             break;
@@ -52,9 +53,9 @@ export async function blockHostname(hostname, cause){
 
     let tabs = await browser.tabs.query({ url: "*://*." + hostname + "/*" });
     for (let i = 0; i < tabs.length; i++) {
-      const tab = tabs[i];
-      browser.tabs.executeScript(tab.id, {
-        code: `document.body.textContent = "Website blocked by Web Time. ${message}"; ${style}`
-      });
+        const tab = tabs[i];
+        browser.tabs.executeScript(tab.id, {
+            code: `document.body.textContent = "Website blocked by Web Time. ${message}"; ${style}`
+        });
     }
 }
