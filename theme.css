@@ -75,6 +75,7 @@ header {
 
 #options label{
   color: #9D9D9D;
+  font-size: 14px; 
 }
 
 @media (prefers-color-scheme: ligth) {
@@ -186,7 +187,7 @@ button {
 input[type="button"]:hover, 
 input[type="submit"]:hover, 
 button:hover{
-  background-color: red;
+  background-color: rgb(242, 242, 242);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -222,7 +223,7 @@ button:hover{
 
 .button-primary {
   background-color: rgba(40, 129, 197, 1) !important;
-  color: white;
+  color: white !important;
 }
 
 .button-primary:hover {
@@ -287,6 +288,17 @@ nav .nav-item-active {
   color: #2e3233;
   border-bottom: 2px solid #4EA1E1;
 }
+
+nav .nav-item-icon img{
+  width: 20px;
+}
+
+@media (prefers-color-scheme: dark) {
+  nav .nav-item-icon, .icon-svg {
+    filter: invert(97%) sepia(0%) saturate(0%) hue-rotate(53deg) brightness(103%) contrast(106%);
+  }
+}
+
 
 nav #view-settings, nav #button-add-rule {
   opacity: 0.3;
