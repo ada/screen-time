@@ -12,7 +12,6 @@ export const defaults = {
         duration: 30
     },
     hosts: [],
-    theme: "light",
     blocketAfter: false
 }
 

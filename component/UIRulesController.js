@@ -40,7 +40,7 @@ async function list() {
     if ( _rules.length === 0) {
         html = `<p class="text-center text-gray text-lead">No rules have been set for this hostname. To create a new rule, click the "+" button.</p> `;
     } else {
-        html = `<table  class="table-bordered table-stripped"><thead><tr><th width="25%">Day</th><th width="25%">Start</th><th width="25%">End</th><th width="25%">Action</th></tr></thead><tbody>`;
+        html = `<table  class="table-bordered table-stripped"><thead><tr><th>Day</th><th>Start</th><th>End</th><th width="30%">Action</th></tr></thead><tbody>`;
     
         for (let i = 0; i < _rules.length; i++) {
             const r = _rules[i];

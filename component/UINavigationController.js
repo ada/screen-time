@@ -28,17 +28,17 @@ async function onTabNavigation(e) {
         tabcontent[i].style.display = "none";
     }
 
-    let tabItems = document.getElementsByClassName("tab-link");
+    let tabItems = document.getElementsByClassName("nav-item");
 
     for (let i = 0; i < tabItems.length; i++) {
         const element = tabItems[i];
         element.disabled = false;
-        element.classList.remove("btn-active");
+        element.classList.remove("nav-item-active");
     }
 
     let targetId = e.srcElement.id.replace("view-", "") + "View";
     document.getElementById(targetId).style.display = "block";
-    e.currentTarget.className += " btn-active";
+    e.currentTarget.className += " nav-item-active";
     customizeTabBarForView(targetId);
 }
 

@@ -188,12 +188,12 @@ async function updateSubtitle(data) {
     High light the button corresponding to the active nDays
 */
 async function updateChartSubtitle() {
-    let _cp = document.getElementById("chartViewOptions").getElementsByClassName("btn-chart-option");
+    let _cp = document.getElementById("chartViewOptions").getElementsByTagName("button")
 
     for (let index = 0; index < _cp.length; index++) {
         const element = _cp[index];
         element.disabled = false;
-        element.classList.remove("btn-active");
+        element.classList.remove("button-active");
     }
 
     let selectedId = "view-week";
@@ -210,6 +210,6 @@ async function updateChartSubtitle() {
     }
 
     let _curr = document.getElementById(selectedId);
-    _curr.classList.add("btn-active");
+    _curr.classList.add("button-active");
     _curr.disabled = true;
 }

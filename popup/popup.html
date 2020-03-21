@@ -8,42 +8,37 @@
 
 <body id="popup">
 
-  <header id="navbar">
-    <button type="button" class="tab-link btn btn-link" id="view-chart">Chart</button>
-    <button type="button" class="tab-link btn btn-link" id="view-alarm">Alarm</button>
-    <button type="button" class="tab-link btn btn-link" id="view-rules">Rules</button>
-    <button type="button" class="tab-link btn btn-link" id="view-options">Options</button>
-
-
-
-    <button type="button" class="tab-link btn btn-link pull-right btn-icon" id="view-settings">
+  <nav>
+    <button type="button" class="nav-item" id="view-chart">Chart</button>
+    <button type="button" class="nav-item" id="view-alarm">Alarm</button>
+    <button type="button" class="nav-item" id="view-rules">Rules</button>
+    <button type="button" class="nav-item" id="view-options">Options</button>
+    <button type="button" class="nav-item pull-right nav-item-icon" id="view-settings">
       <svg  width="20" height="20" viewBox="0 0 14 16" version="1.1" aria-hidden="true"><path fill-rule="evenodd" d="M14 8.77v-1.6l-1.94-.64-.45-1.09.88-1.84-1.13-1.13-1.81.91-1.09-.45-.69-1.92h-1.6l-.63 1.94-1.11.45-1.84-.88-1.13 1.13.91 1.81-.45 1.09L0 7.23v1.59l1.94.64.45 1.09-.88 1.84 1.13 1.13 1.81-.91 1.09.45.69 1.92h1.59l.63-1.94 1.11-.45 1.84.88 1.13-1.13-.92-1.81.47-1.09L14 8.75v.02zM7 11c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z"></path></svg>
     </button>
-
-    <button type="button" class="tab-link btn btn-link pull-right btn-icon" id="button-add-rule" hidden>
+    <button type="button" class="nav-item pull-right nav-item-icon" id="button-add-rule" hidden>
       <svg width="20" height="20" class="octicon octicon-plus" viewBox="0 0 12 16" version="1.1" aria-hidden="true"><path fill-rule="evenodd" d="M12 9H7v5H5V9H0V7h5V2h2v5h5v2z"></path></svg>
     </button>
-    
     <div class="clear"></div>
-  </header>
+  </nav>
 
   <section id="chartView" class="tabContent text-center">
     <h3 id="title"></h3>
     <p id="subtitle" class="text-gray text-lead"></p>
+    
     <div id="chartContainer">
       <canvas id="cchart"></canvas>
     </div>
 
-    <div id="chartViewOptions" class="btn-group text-center">
-      <button type="button" class="btn btn-chart-option" id="view-day">Today</button>
-      <button type="button" class="btn btn-chart-option" id="view-week">Week</button>
-      <button type="button" class="btn btn-chart-option" id="view-month">Month</button>
+    <div id="chartViewOptions" class="button-group">
+      <button type="button" id="view-day">Today</button>
+      <button type="button" id="view-week">Week</button>
+      <button type="button" id="view-month">Month</button>
     </div>
-
   </section>
 
   <section id="alarmView" class="tabContent text-center">
-    <svg width="32" height="32" style="opacity: 10%;" viewBox="0 0 14 16" version="1.1" aria-hidden="true">
+    <svg width="32" height="32" style="opacity: 10%; margin-top: 30px;" viewBox="0 0 14 16" version="1.1" aria-hidden="true">
       <path fill-rule="evenodd"
         d="M14 12v1H0v-1l.73-.58c.77-.77.81-2.55 1.19-4.42C2.69 3.23 6 2 6 2c0-.55.45-1 1-1s1 .45 1 1c0 0 3.39 1.23 4.16 5 .38 1.88.42 3.66 1.19 4.42l.66.58H14zm-7 4c1.11 0 2-.89 2-2H5c0 1.11.89 2 2 2z">
       </path>
@@ -58,12 +53,9 @@
     <div id="rulesTable"></div>
     
 
-    <form name="ruleForm" id="ruleForm" class="text-left" style="padding: 10px 15px" hidden>
+    <form name="ruleForm" id="ruleForm" hidden>
       <p>
-      <table>
-        <tr>
-          <td width="33.33%">
-            <label for="ruleDay">Day</label><br>
+        <label for="ruleDay">Day</label><br>
             <select name="ruleDay" id="ruleDay">
               <option value="-1">Any day</option>
               <option value="1">Monday</option>
@@ -74,32 +66,27 @@
               <option value="6">Saturday</option>
               <option value="0">Sunday</option>
             </select>
-          </td>
-          <td width="33.33%">
-            <label for="ruleTimeStart">Start</label><br>
+      </p>
+      <p>
+        <label for="ruleTimeStart">Start</label><br>
             <input type="time" id="ruleTimeStart" name="ruleTimeStart">
-          </td>
-          <td width="33.33%">
-            <label for="ruleTimeEnd">End</label><br>
+      </p>
+      <p>
+        <label for="ruleTimeEnd">End</label><br>
             <input type="time" id="ruleTimeEnd" name="ruleTimeEnd">
-          </td>
-        </tr>
-      </table>
       </p>
-      <p>
-        <input type="submit" class="btn btn-block btn-primary" id="ruleFormSubmit" name="ruleFormSubmit">
-      </p>
-      <p>
-        <button type="button" class="btn btn-block" id="ruleFormCancel" name="ruleFormCancel">Cancel</button>
-      </p>
+      <div>
+        <button type="button" id="ruleFormCancel" name="ruleFormCancel">Cancel</button>
+        <input type="submit" class="button-primary" id="ruleFormSubmit" name="ruleFormSubmit">
+      </div>
     </form>
   </section>
 
   <section id="optionsView" class="tabContent text-center">
     <h1>Web Time</h1>
-    <p class="text-gray lead">Track, measure and analyze your surfing behaviour.</p>
+    <p class="text-gray text-lead">Track, measure and analyze your surfing behaviour.</p>
     <p>
-      <button type="button" id="enableTracking" class="btn btn-lg btn-primary">Enable tracking</button>
+      <button type="button" id="enableTracking" class="button-primary">Enable tracking</button>
       <button type="button" id="disableTracking">Stop tracking</button>
     </p>
   </section>
