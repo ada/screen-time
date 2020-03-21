@@ -2,7 +2,7 @@ import * as settings from './settings.js';
 import { defaultChartOptions } from './chartOptions.js';
 import * as activity from './/activity.js';
 
-let _settings, _nDays, _chart, _host, _hostname; 
+let _settings, _nDays, _chart, _host, _hostname;
 let UIButtonViewDay = document.getElementById("view-day");
 let UIButtonViewWeek = document.getElementById("view-week");
 let UIButtonViewMonth = document.getElementById("view-month");
@@ -42,6 +42,7 @@ async function updateChart() {
     _chart.data.datasets[0].data = data.y;
     _chart.data.datasets[1].data = data.yLimit;
     _chart.data.datasets[2].data = data.yCompare;
+    _chart.data.datasets[2].label = getComparisionLabel(_nDays);
     _chart.data.labels = data.x;
     _chart.options = defaultChartOptions;
     _chart.update();
@@ -62,12 +63,14 @@ export async function init(hostname) {
     */
     browser.runtime.sendMessage({ id: "WRITE_CACHE_TO_STORAGE", hostname: hostname });
 
-    _hostname = hostname; 
+    _hostname = hostname;
     _settings = await settings.get();
     _nDays = _settings.chart.nDays;
     _host = await activity.get({ hostname: hostname });
+    
+    
 
-    _settings = settings; 
+    _settings = settings;
     UITitle.textContent = "Time on " + hostname;
     let data = await prepareGraphData(_host.sessions);
 
@@ -90,24 +93,31 @@ export async function init(hostname) {
         label: "Limit",
         data: data.yLimit,
         type: 'line',
-        backgroundColor: 'rgba(255, 0, 0, 0.3)',
         order: 1,
         borderColor: 'rgba(255, 0, 0, 0.3)',
-        borderDash: [6],
+        borderDash: [5],
         borderWidth: 1,
         fill: false,
         radius: 0,
     },
     {
-        label: "Compare",
+        label: getComparisionLabel(_nDays),
         data: data.yCompare,
-        type: 'line',
         order: 2,
-        borderColor: 'rgba(233, 241, 246, 1)',
-        borderWidth: 1,
-        backgroundColor: 'rgba(233, 241, 246, 1)',
+        borderColor: 'rgba(233, 241, 246, 0)',
+        borderWidth: 0,
         fill: true,
         radius: 0,
+        backgroundColor: function (context) {
+            var index = context.dataIndex;
+            var value = context.dataset.data[index];
+            var min = Math.min(...context.dataset.data);
+            var max = Math.max(...context.dataset.data);
+            var opacity = value / max;
+            opacity = opacity * 0.5;
+            var color = "rgba(118, 89, 255, " + opacity.toString() + ")";
+            return color;
+        }
     }];
 
     let UICanvasChartContext = UICanvasChart.getContext('2d');
@@ -212,4 +222,18 @@ async function updateChartSubtitle() {
     let _curr = document.getElementById(selectedId);
     _curr.classList.add("button-active");
     _curr.disabled = true;
+}
+
+
+function getComparisionLabel(nDays){
+    switch (nDays) {
+        case 1:
+            return "Yesterday";
+        case 7:
+            return "Last week";
+        case 30:
+            return "Last month";
+        default:
+            return "Comparision";
+    }
 }
