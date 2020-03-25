@@ -16,14 +16,17 @@ export async function check(hostname) {
     const hostSettings = _settings.hosts[hostSettingsIndex];
     const now = new Date();
     const currentDay = now.getDay();
-    const currentTime = `${now.getHours()}:${now.getMinutes()}}`;
+    const currentTime = Date.parse(`2000-01-01 ${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`);
 
     for (let i = 0; i < hostSettings.rules.length; i++) {
         const rule = hostSettings.rules[i];
+        const startTime = Date.parse(`2000-01-01 ${rule.start}:00`);
+        const endTime = Date.parse(`2000-01-01 ${rule.end}:00`);
+        //console.log(currentTime, startTime, endTime);
         if ((Number(rule.day) === -1 ||
-            Number(rule.day) == currentDay) &&
-            currentTime >= rule.start &&
-            currentTime < rule.end) {
+            Number(rule.day) === currentDay) &&
+            currentTime >= startTime &&
+            currentTime < endTime) {
             grantAccess = true;
         }
     }

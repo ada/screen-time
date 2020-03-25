@@ -42,10 +42,6 @@ a {
   clear: both;
 }
 
-.text-lead {
-  padding: 0 32px;
-}
-
 .pull-right {
   float: right !important;
 }
@@ -305,7 +301,7 @@ nav #view-settings, nav #button-add-rule {
 }
 
 nav #view-settings:hover, nav #button-add-rule:hover {
-  opacity: 0.6;
+  opacity: 1;
 }
 
 @media (prefers-color-scheme: dark) {

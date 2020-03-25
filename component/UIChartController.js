@@ -76,7 +76,7 @@ export async function init(hostname) {
 
     let datasets = [{
         label: "Web time",
-        order: 0,
+        order: 2,
         data: data.y,
         borderWidth: 0,
         backgroundColor: function (context) {
@@ -93,7 +93,7 @@ export async function init(hostname) {
         label: "Limit",
         data: data.yLimit,
         type: 'line',
-        order: 1,
+        order: 0,
         borderColor: 'rgba(255, 0, 0, 0.3)',
         borderDash: [5],
         borderWidth: 1,
@@ -101,9 +101,10 @@ export async function init(hostname) {
         radius: 0,
     },
     {
+        type: 'line',
         label: getComparisionLabel(_nDays),
         data: data.yCompare,
-        order: 2,
+        order: 1,
         borderColor: 'rgba(233, 241, 246, 0)',
         borderWidth: 0,
         fill: true,
@@ -117,7 +118,8 @@ export async function init(hostname) {
             opacity = opacity * 0.5;
             var color = "rgba(118, 89, 255, " + opacity.toString() + ")";
             return color;
-        }
+        }, 
+        backgroundColor: "rgba(118, 89, 255, 0.3)"
     }];
 
     let UICanvasChartContext = UICanvasChart.getContext('2d');
